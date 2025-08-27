@@ -865,13 +865,13 @@ func (arena *Arena) setupNetwork(teams [6]*model.Team, isPreload bool) {
 		if err := arena.accessPoint.ConfigureTeamWifi(teams); err != nil {
 			log.Printf("Failed to configure team WiFi: %s", err.Error())
 		}
-		go func() {
-			arena.setSCCEthernetEnabled(false)
-			if err := arena.networkSwitch.ConfigureTeamEthernet(teams); err != nil {
-				log.Printf("Failed to configure team Ethernet: %s", err.Error())
-			}
-			arena.setSCCEthernetEnabled(true)
-		}()
+		// go func() {
+		// 	arena.setSCCEthernetEnabled(false)
+		// 	if err := arena.networkSwitch.ConfigureTeamEthernet(teams); err != nil {
+		// 		log.Printf("Failed to configure team Ethernet: %s", err.Error())
+		// 	}
+		// 	arena.setSCCEthernetEnabled(true)
+		// }()
 	}
 }
 

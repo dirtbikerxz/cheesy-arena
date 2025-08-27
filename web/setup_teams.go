@@ -8,13 +8,14 @@ package web
 import (
 	"bytes"
 	"fmt"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/dchest/uniuri"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/dchest/uniuri"
 )
 
 const wpaKeyLength = 8
@@ -245,7 +246,8 @@ func (web *Web) teamsGenerateWpaKeysHandler(w http.ResponseWriter, r *http.Reque
 	}
 	for _, team := range teams {
 		if len(team.WpaKey) == 0 || generateAllKeys {
-			team.WpaKey = uniuri.NewLen(wpaKeyLength)
+			team.WpaKey = uniuri.NewLen(wpaKeyLength) // Disabling random passoword gen and making all team passwords: "password" for ease of configuration
+			team.WpaKey = "password"
 			web.arena.Database.UpdateTeam(&team)
 		}
 	}
