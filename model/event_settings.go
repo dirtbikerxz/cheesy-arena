@@ -59,6 +59,15 @@ type EventSettings struct {
 	SwitchAddress               string
 	SwitchPassword              string
 	SCCManagementEnabled        bool
+	CoreSwitchAddress           string
+	CoreSwitchUsername          string
+	CoreSwitchPassword          string
+	RedSwitchAddress            string
+	RedSwitchUsername           string
+	RedSwitchPassword           string
+	BlueSwitchAddress           string
+	BlueSwitchUsername          string
+	BlueSwitchPassword          string
 	RedSCCAddress               string
 	BlueSCCAddress              string
 	SCCUsername                 string

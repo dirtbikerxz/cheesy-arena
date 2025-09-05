@@ -58,6 +58,9 @@ type Arena struct {
 	networkSwitch    *network.Switch
 	redSCC           *network.SCCSwitch
 	blueSCC          *network.SCCSwitch
+	coreTPLinkSwitch *network.TPLinkSwitch
+	redTPLinkSwitch  *network.TPLinkSwitch
+	blueTPLinkSwitch *network.TPLinkSwitch
 	Plc              plc.Plc
 	TbaClient        *partner.TbaClient
 	NexusClient      *partner.NexusClient
@@ -191,6 +194,9 @@ func (arena *Arena) LoadSettings() error {
 	sccDownCommands := strings.Split(settings.SCCDownCommands, "\n")
 	arena.redSCC = network.NewSCCSwitch(settings.RedSCCAddress, settings.SCCUsername, settings.SCCPassword, sccUpCommands, sccDownCommands)
 	arena.blueSCC = network.NewSCCSwitch(settings.BlueSCCAddress, settings.SCCUsername, settings.SCCPassword, sccUpCommands, sccDownCommands)
+	arena.coreTPLinkSwitch = network.NewTPLinkSwitch(settings.CoreSwitchAddress, settings.CoreSwitchUsername, settings.CoreSwitchPassword)
+	arena.redTPLinkSwitch = network.NewTPLinkSwitch(settings.RedSwitchAddress, settings.RedSwitchUsername, settings.RedSwitchPassword)
+	arena.blueTPLinkSwitch = network.NewTPLinkSwitch(settings.BlueSwitchAddress, settings.BlueSwitchUsername, settings.BlueSwitchPassword)
 	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 	arena.NexusClient = partner.NewNexusClient(settings.TbaEventCode)
@@ -865,6 +871,8 @@ func (arena *Arena) setupNetwork(teams [6]*model.Team, isPreload bool) {
 		if err := arena.accessPoint.ConfigureTeamWifi(teams); err != nil {
 			log.Printf("Failed to configure team WiFi: %s", err.Error())
 		}
+
+		network.RebootTPLinkSwitch(arena.coreTPLinkSwitch)
 		// go func() {
 		// 	arena.setSCCEthernetEnabled(false)
 		// 	if err := arena.networkSwitch.ConfigureTeamEthernet(teams); err != nil {

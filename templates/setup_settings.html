@@ -312,6 +312,44 @@ UI for configuring event settings.
                     name="sccManagementEnabled" {{if .SCCManagementEnabled}} checked{{end}}>
                 </div>
               </div>
+              
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Red Switch Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="redSwitchAddress" value="{{.RedSwitchAddress}}" placeholder="10.0.100.11">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Red Switch Username</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="redSwitchUsername" value="{{.RedSwitchUsername}}" placeholder="admin">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Red Switch Password</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="redSwitchPassword" value="{{.RedSwitchPassword}}" placeholder="password">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Blue Switch Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="blueSwitchAddress" value="{{.BlueSwitchAddress}}" placeholder="10.0.100.12">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Blue Switch Username</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="blueSwitchUsername" value="{{.BlueSwitchUsername}}" placeholder="admin">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Blue Switch Password</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="blueSwitchPassword" value="{{.BlueSwitchPassword}}" placeholder="password">
+                </div>
+              </div>
+
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">Red SCC Address</label>
                 <div class="col-lg-6">
