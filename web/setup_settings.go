@@ -87,12 +87,15 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.SwitchAddress = r.PostFormValue("switchAddress")
 	eventSettings.SwitchPassword = r.PostFormValue("switchPassword")
 	eventSettings.SCCManagementEnabled = r.PostFormValue("sccManagementEnabled") == "on"
+	eventSettings.CoreSwitchManagementEnabled = r.PostFormValue("coreSwitchManagementEnabled") == "on"
 	eventSettings.CoreSwitchAddress = r.PostFormValue("coreSwitchAddress")
 	eventSettings.CoreSwitchUsername = r.PostFormValue("coreSwitchUsername")
 	eventSettings.CoreSwitchPassword = r.PostFormValue("coreSwitchPassword")
+	eventSettings.RedSwitchManagementEnabled = r.PostFormValue("redSwitchManagementEnabled") == "on"
 	eventSettings.RedSwitchAddress = r.PostFormValue("redSwitchAddress")
 	eventSettings.RedSwitchUsername = r.PostFormValue("redSwitchUsername")
 	eventSettings.RedSwitchPassword = r.PostFormValue("redSwitchPassword")
+	eventSettings.BlueSwitchManagementEnabled = r.PostFormValue("blueSwitchManagementEnabled") == "on"
 	eventSettings.BlueSwitchAddress = r.PostFormValue("blueSwitchAddress")
 	eventSettings.BlueSwitchUsername = r.PostFormValue("blueSwitchUsername")
 	eventSettings.BlueSwitchPassword = r.PostFormValue("blueSwitchPassword")

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -30,6 +31,7 @@ const (
 )
 
 type TPLinkSwitch struct {
+	name         string
 	address      string
 	username     string
 	password     string
@@ -41,25 +43,26 @@ type TPLinkSwitch struct {
 	origin       string
 }
 
-func NewTPLinkSwitch(address, username, password string) *TPLinkSwitch {
+func NewTPLinkSwitch(name, address, username, password string) *TPLinkSwitch {
 	return &TPLinkSwitch{
+		name:         name,
 		address:      address,
 		username:     username,
 		password:     password,
-		loginURL:     address + loginPath,
-		rebootURL:    address + rebootPath,
-		rootURL:      address + rootPath,
-		refererLogin: address + refererLoginPath,
-		refererRebt:  address + refererRebtPath,
-		origin:       address,
+		loginURL:     "http://" + address + loginPath,
+		rebootURL:    "http://" + address + rebootPath,
+		rootURL:      "http://" + address + rootPath,
+		refererLogin: "http://" + address + refererLoginPath,
+		refererRebt:  "http://" + address + refererRebtPath,
+		origin:       "http://" + address,
 	}
 }
 
-func RebootTPLinkSwitch(TPLS *TPLinkSwitch) {
+func (TPLS *TPLinkSwitch) Reboot() {
 	if err := rebootWithLogin(TPLS); err != nil {
-		fmt.Println("ERROR:", err)
+		log.Println(TPLS.name+": ERROR -", err)
 	} else {
-		fmt.Println("Reboot request sent.")
+		log.Println(TPLS.name + ": Reboot request sent - " + TPLS.address)
 	}
 }
 

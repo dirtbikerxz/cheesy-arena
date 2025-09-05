@@ -34,12 +34,6 @@ UI for configuring event settings.
             </button>
           </li>
           <li class="nav-item">
-            <button class="nav-link" id="publishing-tab" data-bs-toggle="tab" data-bs-target="#publishing" type="button"
-              role="tab">
-              Publishing
-            </button>
-          </li>
-          <li class="nav-item">
             <button class="nav-link" id="automation-tab" data-bs-toggle="tab" data-bs-target="#automation" type="button"
               role="tab">
               Automation
@@ -250,12 +244,10 @@ UI for configuring event settings.
           <div class="tab-pane" id="field" role="tabpanel">
             <fieldset class="mb-4">
               <legend>Networking</legend>
-              <p>Enable this setting if you have a Vivid-Hosting VH-113 access point and Cisco Catalyst 3500-series
-                switch
-                available, for isolating each team to its own SSID and VLAN.</p>
+              <p>Enable this setting if you are using a Vivid-Hosting VH-113 access point. This will automatically configure the VH-113's team SSIDs and VLANs.</p>
               <div class="row mb-3">
                 <label class="col-lg-8 control-label"
-                  for="networkSecurityEnabled">Enable advanced network security</label>
+                  for="networkSecurityEnabled">Enable Advanced Networking</label>
                 <div class="col-lg-1 checkbox">
                   <input type="checkbox" id="networkSecurityEnabled"
                     name="networkSecurityEnabled" {{if .NetworkSecurityEnabled}} checked{{end}}>
@@ -268,7 +260,7 @@ UI for configuring event settings.
                 </div>
               </div>
               <div class="row mb-3">
-                <label class="col-lg-6 control-label">AP API Password</label>
+                <label class="col-lg-6 control-label">AP API Password (Generally Blank)</label>
                 <div class="col-lg-6">
                   <input type="password" class="form-control" name="apPassword" value="{{.ApPassword}}">
                 </div>
@@ -286,30 +278,46 @@ UI for configuring event settings.
                   </select>
                 </div>
               </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Switch Address</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="switchAddress" value="{{.SwitchAddress}}" placeholder="10.0.100.3">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Switch Password</label>
-                <div class="col-lg-6">
-                  <input type="password" class="form-control" name="switchPassword" value="{{.SwitchPassword}}">
-                </div>
-              </div>
             </fieldset>
             <fieldset class="mb-4">
-              <legend>SCC Switch</legend>
-              <p>Enable this setting if you have an SSH-capable managed switch in your SCCs and want to run commands
-                to disable team ethernet ports while network reconfiguration is in progress. This setting only works
-                if advanced network security is enabled above.</p>
+              <legend>Managed Switches</legend>
+              <p>Enable these settings if you are using TP-Link Easy Smart Managed switches. A custom cURL api was hard coded for these specific switches. This setting only works
+                if advanced networking is enabled above.</p>
+
               <div class="row mb-3">
                 <label class="col-lg-8 control-label"
-                  for="sccManagementEnabled">Enable SCC switch management</label>
+                  for="coreSwitchManagementEnabled">Enable Core Switch Management</label>
                 <div class="col-lg-1 checkbox">
-                  <input type="checkbox" id="sccManagementEnabled"
-                    name="sccManagementEnabled" {{if .SCCManagementEnabled}} checked{{end}}>
+                  <input type="checkbox" id="coreSwitchManagementEnabled"
+                    name="coreSwitchManagementEnabled" {{if .CoreSwitchManagementEnabled}} checked{{end}}>
+                </div>
+              </div>
+              
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Core Switch Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="coreSwitchAddress" value="{{.CoreSwitchAddress}}" placeholder="10.0.100.10">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Core Switch Username</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="coreSwitchUsername" value="{{.CoreSwitchUsername}}" placeholder="admin">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Core Switch Password</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="coreSwitchPassword" value="{{.CoreSwitchPassword}}" placeholder="password">
+                </div>
+              </div>      
+
+              <div class="row mb-3">
+                <label class="col-lg-8 control-label"
+                  for="redSwitchManagementEnabled">Enable Red Switch Management</label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="redSwitchManagementEnabled"
+                    name="redSwitchManagementEnabled" {{if .RedSwitchManagementEnabled}} checked{{end}}>
                 </div>
               </div>
               
@@ -330,7 +338,17 @@ UI for configuring event settings.
                 <div class="col-lg-6">
                   <input type="text" class="form-control" name="redSwitchPassword" value="{{.RedSwitchPassword}}" placeholder="password">
                 </div>
+              </div>              
+
+              <div class="row mb-3">
+                <label class="col-lg-8 control-label"
+                  for="blueSwitchManagementEnabled">Enable Blue Switch Management</label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="blueSwitchManagementEnabled"
+                    name="blueSwitchManagementEnabled" {{if .BlueSwitchManagementEnabled}} checked{{end}}>
+                </div>
               </div>
+
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">Blue Switch Address</label>
                 <div class="col-lg-6">
@@ -349,116 +367,7 @@ UI for configuring event settings.
                   <input type="text" class="form-control" name="blueSwitchPassword" value="{{.BlueSwitchPassword}}" placeholder="password">
                 </div>
               </div>
-
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Red SCC Address</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="redSCCAddress" value="{{.RedSCCAddress}}" placeholder="10.0.100.48">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Blue SCC Address</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="blueSCCAddress" value="{{.BlueSCCAddress}}" placeholder="10.0.100.49">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">SCC Username</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="sccUsername" value="{{.SCCUsername}}" placeholder="admin">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">SCC Password</label>
-                <div class="col-lg-6">
-                  <input type="password" class="form-control" name="sccPassword" value="{{.SCCPassword}}">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">SCC Enable Commands</label>
-                <div class="col-lg-6">
-                  <textarea class="form-control" name="sccUpCommands" rows="8">{{.SCCUpCommands}}</textarea>
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">SCC Disable Commands</label>
-                <div class="col-lg-6">
-                  <textarea class="form-control" name="sccDownCommands" rows="8">{{.SCCDownCommands}}</textarea>
-                </div>
-              </div>
             </fieldset>
-            <fieldset class="mb-4">
-              <legend>PLC</legend>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">PLC Address</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="plcAddress" value="{{.PlcAddress}}" placeholder="10.0.100.40">
-                </div>
-              </div>
-            </fieldset>
-            <fieldset class="mb-4">
-              <legend>Team Signs</legend>
-              <p>
-                If you are using a set of the (2024+) official team number / timer signs, enter their two-digit IDs
-                (e.g.
-                51, 52, etc.) here.
-              </p>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Red 1 Sign ID</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="teamSignRed1Id"
-                    value="{{if gt .TeamSignRed1Id 0}}{{.TeamSignRed1Id}}{{end}}" placeholder="51">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Red 2 Sign ID</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="teamSignRed2Id"
-                    value="{{if gt .TeamSignRed2Id 0}}{{.TeamSignRed2Id}}{{end}}" placeholder="52">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Red 3 Sign ID</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="teamSignRed3Id"
-                    value="{{if gt .TeamSignRed3Id 0}}{{.TeamSignRed3Id}}{{end}}" placeholder="53">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Red Timer Sign ID</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="teamSignRedTimerId"
-                    value="{{if gt .TeamSignRedTimerId 0}}{{.TeamSignRedTimerId}}{{end}}" placeholder="50">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Blue 1 Sign ID</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="teamSignBlue1Id"
-                    value="{{if gt .TeamSignBlue1Id 0}}{{.TeamSignBlue1Id}}{{end}}" placeholder="55">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Blue 2 Sign ID</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="teamSignBlue2Id"
-                    value="{{if gt .TeamSignBlue2Id 0}}{{.TeamSignBlue2Id}}{{end}}" placeholder="56">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Blue 3 Sign ID</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="teamSignBlue3Id"
-                    value="{{if gt .TeamSignBlue3Id 0}}{{.TeamSignBlue3Id}}{{end}}" placeholder="57">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Blue Timer Sign ID</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="teamSignBlueTimerId"
-                    value="{{if gt .TeamSignBlueTimerId 0}}{{.TeamSignBlueTimerId}}{{end}}" placeholder="54">
-                </div>
-              </div>
               <div class="row mb-3">
                 <legend>Driver Station Lite Mode</legend>
                 <p>When enabled, the Driver Station software will prompt teams to allow Cheesy Arena to connect rather
@@ -472,69 +381,7 @@ UI for configuring event settings.
               </div>
             </fieldset>
           </div>
-          <div class="tab-pane" id="publishing" role="tabpanel">
-            <fieldset class="mb-4">
-              <legend>Publishing</legend>
-              <p>Contact The Blue Alliance to obtain an event code and credentials.</p>
-              <div class="row mb-3">
-                <label class="col-lg-8 control-label"
-                  for="tbaPublishingEnabled">Enable The Blue Alliance publishing</label>
-                <div class="col-lg-1 checkbox">
-                  <input type="checkbox" id="tbaPublishingEnabled"
-                    name="tbaPublishingEnabled" {{if .TbaPublishingEnabled}} checked{{end}}>
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">TBA Event Code</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="tbaEventCode" value="{{.TbaEventCode}}">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">TBA Auth ID</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="tbaSecretId" value="{{.TbaSecretId}}">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">TBA Secret</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="tbaSecret" value="{{.TbaSecret}}">
-                </div>
-              </div>
-            </fieldset>
-            <div class="col-lg-4">
-              {{if .TbaPublishingEnabled}}
-              <legend>Publishing Operations</legend>
-              <div>
-                <a href="/setup/settings/publish_teams" class="btn btn-primary">Publish Teams</a>
-              </div>
-              <div class="mt-2">
-                <a href="/setup/settings/publish_matches" class="btn btn-primary">Publish Schedule/Results</a></div>
-              <div class="mt-2">
-                <a href="/setup/settings/publish_rankings" class="btn btn-primary">Publish Standings</a>
-              </div>
-              <div class="mt-2">
-                <a href="/setup/settings/publish_alliances" class="btn btn-primary">Publish Alliances</a>
-              </div>
-              <div class="mt-2">
-                <a href="/setup/settings/publish_awards" class="btn btn-primary">Publish Awards</a>
-              </div>
-              {{end}}
-            </div>
-          </div>
           <div class="tab-pane" id="automation" role="tabpanel">
-            <fieldset class="mb-4">
-              <legend>Nexus</legend>
-              <p>Automatically populates practice and playoff match lineups from Nexus. Uses the same event code as TBA;
-                configure it above if enabling.</p>
-              <div class="row mb-3">
-                <label class="col-lg-8 control-label" for="nexusEnabled">Enable pulling lineup from Nexus</label>
-                <div class="col-lg-1 checkbox">
-                  <input type="checkbox" id="nexusEnabled" name="nexusEnabled" {{if .NexusEnabled}} checked{{end}}>
-                </div>
-              </div>
-            </fieldset>
             <fieldset class="mb-4">
               <legend>Match Video Recording</legend>
               <p>

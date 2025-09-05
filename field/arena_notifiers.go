@@ -6,11 +6,12 @@
 package field
 
 import (
+	"strconv"
+
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/websocket"
-	"strconv"
 )
 
 type ArenaNotifiers struct {
@@ -94,6 +95,9 @@ func (arena *Arena) generateArenaStatusMessage() any {
 		SwitchStatus          string
 		RedSCCStatus          string
 		BlueSCCStatus         string
+		CoreSwitchStatus      string
+		RedSwitchStatus       string
+		BlueSwitchStatus      string
 		PlcIsHealthy          bool
 		FieldEStop            bool
 		PlcArmorBlockStatuses map[string]bool
@@ -106,6 +110,9 @@ func (arena *Arena) generateArenaStatusMessage() any {
 		arena.networkSwitch.Status,
 		arena.redSCC.Status,
 		arena.blueSCC.Status,
+		"CONFIGURING", // arena.coreSwitch.Status,
+		"CONFIGURING", // arena.redSwitch.Status,
+		"CONFIGURING", // arena.blueSwitch.Status,
 		arena.Plc.IsHealthy(),
 		arena.Plc.GetFieldEStop(),
 		arena.Plc.GetArmorBlockStatuses(),
