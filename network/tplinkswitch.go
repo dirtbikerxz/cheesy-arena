@@ -1,3 +1,6 @@
+// TPLinkSwitch management and monitoring utilities.
+// Provides login, reboot, and status polling for TL-SG108E v6 switches.
+
 package network
 
 import (
@@ -5,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -12,22 +16,13 @@ import (
 )
 
 const (
-	// 	username     = "admin"
-	// 	password     = "password"
-	// 	switchIP     = "10.0.100.10"
-	// baseURL      = "http://" + switchIP
-	// loginURL     = baseURL + "/logon.cgi"
-	// rebootURL    = baseURL + "/reboot.cgi"
-	// rootURL      = baseURL + "/"
-	// refererLogin = baseURL + "/"
-	// refererRebt  = baseURL + "/SystemRebootRpm.htm"
-	// origin       = baseURL
-
 	loginPath        = "/logon.cgi"
 	rebootPath       = "/reboot.cgi"
 	rootPath         = "/"
 	refererLoginPath = "/"
 	refererRebtPath  = "/SystemRebootRpm.htm"
+
+	switchPollPeriodSec = 1
 )
 
 type TPLinkSwitch struct {
@@ -41,6 +36,13 @@ type TPLinkSwitch struct {
 	refererLogin string
 	refererRebt  string
 	origin       string
+
+	// Public status string: "UNKNOWN", "ERROR", "CONFIGURING", "ACTIVE".
+	Status string
+
+	// Reboot tracking for graceful "configuring" state.
+	lastRebootAt time.Time
+	rebootGrace  time.Duration
 }
 
 func NewTPLinkSwitch(name, address, username, password string) *TPLinkSwitch {
@@ -55,32 +57,89 @@ func NewTPLinkSwitch(name, address, username, password string) *TPLinkSwitch {
 		refererLogin: "http://" + address + refererLoginPath,
 		refererRebt:  "http://" + address + refererRebtPath,
 		origin:       "http://" + address,
+
+		Status:      "UNKNOWN",
+		rebootGrace: 40 * time.Second,
 	}
 }
 
+// Run starts a background loop to monitor the switch status every second.
+func (TPLS *TPLinkSwitch) Run(isActive bool) {
+	for {
+		time.Sleep(time.Second * switchPollPeriodSec)
+		if isActive {
+			if err := TPLS.updateMonitoring(); err != nil {
+				log.Printf("%s: Failed to update switch monitoring: %v", TPLS.name, err)
+			}
+		}
+	}
+}
+
+// Reboot triggers a reboot via login + POST and sets Status to "configuring".
 func (TPLS *TPLinkSwitch) Reboot() {
 	if err := rebootWithLogin(TPLS); err != nil {
 		log.Println(TPLS.name+": ERROR -", err)
 	} else {
+		TPLS.lastRebootAt = time.Now()
 		log.Println(TPLS.name + ": Reboot request sent - " + TPLS.address)
 	}
 }
+
+// updateMonitoring checks TCP port 80 reachability and updates Status.
+func (TPLS *TPLinkSwitch) updateMonitoring() error {
+	if TPLS.isReachableTCP80(500 * time.Millisecond) {
+		if TPLS.Status != "ACTIVE" {
+			if !TPLS.lastRebootAt.IsZero() && time.Since(TPLS.lastRebootAt) < TPLS.rebootGrace {
+				log.Printf("%s: status changed from %s to ACTIVE in "+time.Since(TPLS.lastRebootAt).String()+" .", TPLS.name, TPLS.Status)
+			} else {
+				log.Printf("%s: status changed from %s to ACTIVE.", TPLS.name, TPLS.Status)
+			}
+		}
+		TPLS.Status = "ACTIVE"
+		return nil
+	}
+
+	// Within grace window → keep reporting "configuring".
+	if !TPLS.lastRebootAt.IsZero() && time.Since(TPLS.lastRebootAt) < TPLS.rebootGrace {
+		if TPLS.Status != "CONFIGURING" {
+			log.Printf("%s: status changed from %s to CONFIGURING.", TPLS.name, TPLS.Status)
+		}
+		TPLS.Status = "CONFIGURING"
+		return nil
+	}
+
+	// Outside grace window and unreachable → "error".
+	if TPLS.Status != "ERROR" {
+		log.Printf("%s: status changed from %s to ERROR.", TPLS.name, TPLS.Status)
+	}
+	TPLS.Status = "ERROR"
+	return nil
+}
+
+// isReachableTCP80 does a quick TCP dial to port 80.
+func (TPLS *TPLinkSwitch) isReachableTCP80(timeout time.Duration) bool {
+	addr := TPLS.address + ":80"
+	d := net.Dialer{Timeout: timeout}
+	conn, err := d.Dial("tcp", addr)
+	if err != nil {
+		return false
+	}
+	_ = conn.Close()
+	return true
+}
+
+// --- Existing helpers ---
 
 func rebootWithLogin(TPLS *TPLinkSwitch) error {
 	jar, _ := cookiejar.New(nil)
 	client := &http.Client{Jar: jar, Timeout: 2 * time.Second}
 
-	// 0) GET / to receive initial H_P_SSID cookie
 	if err := getRoot(client, TPLS); err != nil {
 		return fmt.Errorf("prefetch root: %w", err)
 	}
-
-	// 1) LOGIN
 	if err := performLogin(client, TPLS); err != nil {
 		return fmt.Errorf("login: %w", err)
 	}
-
-	// 2) REBOOT
 	if err := performReboot(client, TPLS); err != nil {
 		return fmt.Errorf("reboot: %w", err)
 	}
@@ -97,7 +156,6 @@ func getRoot(client *http.Client, TPLS *TPLinkSwitch) error {
 	}
 	defer resp.Body.Close()
 	io.Copy(io.Discard, resp.Body)
-	// Some firmwares 302 here; cookie jar still captures Set-Cookie.
 	return nil
 }
 
@@ -122,7 +180,6 @@ func performLogin(client *http.Client, TPLS *TPLinkSwitch) error {
 	defer resp.Body.Close()
 	io.Copy(io.Discard, resp.Body)
 
-	// Many units return 200 or a redirect on success. Either is fine as long as the cookie jar holds H_P_SSID.
 	if resp.StatusCode != http.StatusOK && (resp.StatusCode < 300 || resp.StatusCode > 399) {
 		return fmt.Errorf("unexpected login status: %s", resp.Status)
 	}
@@ -131,7 +188,6 @@ func performLogin(client *http.Client, TPLS *TPLinkSwitch) error {
 
 func performReboot(client *http.Client, TPLS *TPLinkSwitch) error {
 	form := []byte("reboot_op=reboot&save_op=false")
-
 	req, _ := http.NewRequest("POST", TPLS.rebootURL, bytes.NewBuffer(form))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Origin", TPLS.origin)
@@ -147,7 +203,6 @@ func performReboot(client *http.Client, TPLS *TPLinkSwitch) error {
 	io.Copy(io.Discard, resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
-		// Some firmwares 302 to a “rebooting…” page; treat 2xx/3xx as success.
 		if resp.StatusCode < 300 || resp.StatusCode > 399 {
 			return fmt.Errorf("reboot failed: %s", resp.Status)
 		}

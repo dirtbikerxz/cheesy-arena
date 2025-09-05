@@ -693,6 +693,9 @@ func (arena *Arena) Run() {
 	go arena.listenForDsUdpPackets()
 	go arena.accessPoint.Run()
 	go arena.Plc.Run()
+	go arena.coreTPLinkSwitch.Run(arena.EventSettings.CoreSwitchManagementEnabled)
+	go arena.redTPLinkSwitch.Run(arena.EventSettings.RedSwitchManagementEnabled)
+	go arena.blueTPLinkSwitch.Run(arena.EventSettings.BlueSwitchManagementEnabled)
 
 	for {
 		loopStartTime := time.Now()

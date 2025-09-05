@@ -113,13 +113,13 @@ UI for controlling match play and viewing team connection and field status.
             <br/>
             <span class="badge badge-status" id="coreSwitchStatus">Core Switch</span>
             {{end}}
-            {{if .EventSettings.BlueSwitchManagementEnabled}}
-            <br/>
-            <span class="badge badge-status" id="blueSwitchStatus">Blue Switch</span>
-            {{end}}
             {{if .EventSettings.RedSwitchManagementEnabled}}
             <br/>
             <span class="badge badge-status" id="redSwitchStatus">Red Switch</span>
+            {{end}}
+            {{if .EventSettings.BlueSwitchManagementEnabled}}
+            <br/>
+            <span class="badge badge-status" id="blueSwitchStatus">Blue Switch</span>
             {{end}}
           </p>
           {{end}}
