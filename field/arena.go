@@ -6,6 +6,7 @@
 package field
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"reflect"
@@ -58,9 +59,9 @@ type Arena struct {
 	networkSwitch    *network.Switch
 	redSCC           *network.SCCSwitch
 	blueSCC          *network.SCCSwitch
-	coreTPLinkSwitch *network.TPLinkSwitch
-	redTPLinkSwitch  *network.TPLinkSwitch
-	blueTPLinkSwitch *network.TPLinkSwitch
+	coreSwitch       *network.TPLinkSwitch
+	redTeamSwitch    *network.NetgearPlusSwitch
+	blueTeamSwitch   *network.NetgearPlusSwitch
 	Plc              plc.Plc
 	TbaClient        *partner.TbaClient
 	NexusClient      *partner.NexusClient
@@ -99,6 +100,7 @@ type Arena struct {
 	soundsPlayed                      map[*game.MatchSound]struct{}
 	breakDescription                  string
 	preloadedTeams                    *[6]*model.Team
+	pendingSwitchRebootCancel         context.CancelFunc
 }
 
 type AllianceStation struct {
@@ -194,9 +196,9 @@ func (arena *Arena) LoadSettings() error {
 	sccDownCommands := strings.Split(settings.SCCDownCommands, "\n")
 	arena.redSCC = network.NewSCCSwitch(settings.RedSCCAddress, settings.SCCUsername, settings.SCCPassword, sccUpCommands, sccDownCommands)
 	arena.blueSCC = network.NewSCCSwitch(settings.BlueSCCAddress, settings.SCCUsername, settings.SCCPassword, sccUpCommands, sccDownCommands)
-	arena.coreTPLinkSwitch = network.NewTPLinkSwitch("Core Switch", settings.CoreSwitchAddress, settings.CoreSwitchUsername, settings.CoreSwitchPassword)
-	arena.redTPLinkSwitch = network.NewTPLinkSwitch("Red Switch", settings.RedSwitchAddress, settings.RedSwitchUsername, settings.RedSwitchPassword)
-	arena.blueTPLinkSwitch = network.NewTPLinkSwitch("Blue Switch", settings.BlueSwitchAddress, settings.BlueSwitchUsername, settings.BlueSwitchPassword)
+	arena.coreSwitch = network.NewTPLinkSwitch("Core Switch", settings.CoreSwitchAddress, settings.CoreSwitchUsername, settings.CoreSwitchPassword)
+	arena.redTeamSwitch = network.NewNetgearPlusSwitch("Red Switch", settings.RedSwitchAddress, settings.RedSwitchPassword)
+	arena.blueTeamSwitch = network.NewNetgearPlusSwitch("Blue Switch", settings.BlueSwitchAddress, settings.BlueSwitchPassword)
 	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 	arena.NexusClient = partner.NewNexusClient(settings.TbaEventCode)
@@ -693,9 +695,10 @@ func (arena *Arena) Run() {
 	go arena.listenForDsUdpPackets()
 	go arena.accessPoint.Run()
 	go arena.Plc.Run()
-	go arena.coreTPLinkSwitch.Run(arena.EventSettings.CoreSwitchManagementEnabled)
-	go arena.redTPLinkSwitch.Run(arena.EventSettings.RedSwitchManagementEnabled)
-	go arena.blueTPLinkSwitch.Run(arena.EventSettings.BlueSwitchManagementEnabled)
+	go arena.coreSwitch.Run(arena.EventSettings.CoreSwitchManagementEnabled)
+	go arena.redTeamSwitch.Run()
+	go arena.blueTeamSwitch.Run()
+	// go arena.blueTPLinkSwitch.Run(arena.EventSettings.BlueSwitchManagementEnabled)
 
 	for {
 		loopStartTime := time.Now()
@@ -870,28 +873,75 @@ func (arena *Arena) setupNetwork(teams [6]*model.Team, isPreload bool) {
 		}
 	}
 
-	if arena.EventSettings.NetworkSecurityEnabled {
-		if err := arena.accessPoint.ConfigureTeamWifi(teams); err != nil {
-			log.Printf("Failed to configure team WiFi: %s", err.Error())
-		}
-
-		/* Restart Team Switches to force DHCP lease renewal */
-		if arena.EventSettings.RedSwitchManagementEnabled {
-			arena.redTPLinkSwitch.Reboot()
-		}
-
-		if arena.EventSettings.BlueSwitchManagementEnabled {
-			arena.blueTPLinkSwitch.Reboot()
-		}
-
-		// go func() {
-		// 	arena.setSCCEthernetEnabled(false)
-		// 	if err := arena.networkSwitch.ConfigureTeamEthernet(teams); err != nil {
-		// 		log.Printf("Failed to configure team Ethernet: %s", err.Error())
-		// 	}
-		// 	arena.setSCCEthernetEnabled(true)
-		// }()
+	if !arena.EventSettings.NetworkSecurityEnabled {
+		return
 	}
+
+	// Trigger AP reconfiguration first.
+	if err := arena.accessPoint.ConfigureTeamWifi(teams); err != nil {
+		log.Printf("Failed to configure team WiFi: %s", err.Error())
+	} else {
+		log.Printf("Waiting for access point to finish CONFIGURING before rebooting team switches…")
+	}
+
+	// If we already had a pending wait-and-reboot from a previous call, cancel it.
+	if arena.pendingSwitchRebootCancel != nil {
+		arena.pendingSwitchRebootCancel()
+		arena.pendingSwitchRebootCancel = nil
+	}
+
+	// Non-blocking: wait until AP becomes ACTIVE, then reboot team switches.
+	ctx, cancel := context.WithCancel(context.Background())
+	arena.pendingSwitchRebootCancel = cancel
+
+	const (
+		pollEvery         = 500 * time.Millisecond
+		waitTimeout       = 3 * time.Minute // bump if your AP routinely takes longer
+		settleAfterActive = 0 * time.Second // optional extra wait after ACTIVE
+	)
+
+	start := time.Now()
+	go func() {
+		// Always clear our cancel handle when done.
+		defer func() { arena.pendingSwitchRebootCancel = nil }()
+
+		deadline := time.NewTimer(waitTimeout)
+		ticker := time.NewTicker(pollEvery)
+		defer deadline.Stop()
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				// superseded by a newer setupNetwork call
+				return
+
+			case <-deadline.C:
+				log.Printf("Access point did not return to ACTIVE within %s; skipping team switch reboot.", waitTimeout)
+				return
+
+			case <-ticker.C:
+				if strings.EqualFold(arena.accessPoint.Status, "ACTIVE") {
+					waited := time.Since(start).Round(time.Second)
+					log.Printf("Access point reported ACTIVE after %s; preparing to reboot team switches.", waited)
+
+					if settleAfterActive > 0 {
+						time.Sleep(settleAfterActive)
+					}
+
+					if arena.EventSettings.RedSwitchManagementEnabled {
+						log.Printf("Rebooting RED team switch…")
+						go arena.redTeamSwitch.Reboot()
+					}
+					if arena.EventSettings.BlueSwitchManagementEnabled {
+						log.Printf("Rebooting BLUE team switch…")
+						go arena.blueTeamSwitch.Reboot()
+					}
+					return
+				}
+			}
+		}
+	}()
 }
 
 // Returns nil if the match can be started, and an error otherwise.
