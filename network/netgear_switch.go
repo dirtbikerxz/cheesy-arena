@@ -82,10 +82,12 @@ func NewNetgearPlusSwitch(name, address, password string) *NetgearPlusSwitch {
 }
 
 // Run starts the background status monitor (ICMP).
-func (s *NetgearPlusSwitch) Run() {
+func (s *NetgearPlusSwitch) Run(switchManagementEnabled bool) {
 	for {
 		time.Sleep(pollPeriod)
-		_ = s.updateMonitoring()
+		if switchManagementEnabled {
+			_ = s.updateMonitoring()
+		}
 	}
 }
 

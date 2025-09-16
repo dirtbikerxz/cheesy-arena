@@ -59,9 +59,11 @@ type Arena struct {
 	networkSwitch    *network.Switch
 	redSCC           *network.SCCSwitch
 	blueSCC          *network.SCCSwitch
-	coreSwitch       *network.TPLinkSwitch
+	coreSwitch       *network.NetgearPlusSwitch
 	redTeamSwitch    *network.NetgearPlusSwitch
+	redFMSSwitch     *network.NetgearPlusSwitch
 	blueTeamSwitch   *network.NetgearPlusSwitch
+	blueFMSSwitch    *network.NetgearPlusSwitch
 	Plc              plc.Plc
 	TbaClient        *partner.TbaClient
 	NexusClient      *partner.NexusClient
@@ -196,9 +198,11 @@ func (arena *Arena) LoadSettings() error {
 	sccDownCommands := strings.Split(settings.SCCDownCommands, "\n")
 	arena.redSCC = network.NewSCCSwitch(settings.RedSCCAddress, settings.SCCUsername, settings.SCCPassword, sccUpCommands, sccDownCommands)
 	arena.blueSCC = network.NewSCCSwitch(settings.BlueSCCAddress, settings.SCCUsername, settings.SCCPassword, sccUpCommands, sccDownCommands)
-	arena.coreSwitch = network.NewTPLinkSwitch("Core Switch", settings.CoreSwitchAddress, settings.CoreSwitchUsername, settings.CoreSwitchPassword)
-	arena.redTeamSwitch = network.NewNetgearPlusSwitch("Red Switch", settings.RedSwitchAddress, settings.RedSwitchPassword)
-	arena.blueTeamSwitch = network.NewNetgearPlusSwitch("Blue Switch", settings.BlueSwitchAddress, settings.BlueSwitchPassword)
+	arena.coreSwitch = network.NewNetgearPlusSwitch("Core Switch", settings.CoreSwitchAddress, settings.CoreSwitchPassword)
+	arena.redTeamSwitch = network.NewNetgearPlusSwitch("Red Team Switch", settings.RedTeamSwitchAddress, settings.RedTeamSwitchPassword)
+	arena.redFMSSwitch = network.NewNetgearPlusSwitch("Red FMS Switch", settings.RedFMSSwitchAddress, settings.RedFMSSwitchPassword)
+	arena.blueTeamSwitch = network.NewNetgearPlusSwitch("Blue Team Switch", settings.BlueTeamSwitchAddress, settings.BlueTeamSwitchPassword)
+	arena.blueFMSSwitch = network.NewNetgearPlusSwitch("Blue FMS Switch", settings.BlueFMSSwitchAddress, settings.BlueFMSSwitchPassword)
 	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 	arena.NexusClient = partner.NewNexusClient(settings.TbaEventCode)
@@ -696,8 +700,10 @@ func (arena *Arena) Run() {
 	go arena.accessPoint.Run()
 	go arena.Plc.Run()
 	go arena.coreSwitch.Run(arena.EventSettings.CoreSwitchManagementEnabled)
-	go arena.redTeamSwitch.Run()
-	go arena.blueTeamSwitch.Run()
+	go arena.redTeamSwitch.Run(arena.EventSettings.RedTeamSwitchManagementEnabled)
+	go arena.redFMSSwitch.Run(arena.EventSettings.RedFMSSwitchManagementEnabled)
+	go arena.blueTeamSwitch.Run(arena.EventSettings.BlueTeamSwitchManagementEnabled)
+	go arena.blueFMSSwitch.Run(arena.EventSettings.BlueFMSSwitchManagementEnabled)
 	// go arena.blueTPLinkSwitch.Run(arena.EventSettings.BlueSwitchManagementEnabled)
 
 	for {
@@ -929,11 +935,11 @@ func (arena *Arena) setupNetwork(teams [6]*model.Team, isPreload bool) {
 						time.Sleep(settleAfterActive)
 					}
 
-					if arena.EventSettings.RedSwitchManagementEnabled {
+					if arena.EventSettings.RedTeamSwitchManagementEnabled {
 						log.Printf("Rebooting RED team switch…")
 						go arena.redTeamSwitch.Reboot()
 					}
-					if arena.EventSettings.BlueSwitchManagementEnabled {
+					if arena.EventSettings.BlueTeamSwitchManagementEnabled {
 						log.Printf("Rebooting BLUE team switch…")
 						go arena.blueTeamSwitch.Reboot()
 					}

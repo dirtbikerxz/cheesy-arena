@@ -89,16 +89,19 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.SCCManagementEnabled = r.PostFormValue("sccManagementEnabled") == "on"
 	eventSettings.CoreSwitchManagementEnabled = r.PostFormValue("coreSwitchManagementEnabled") == "on"
 	eventSettings.CoreSwitchAddress = r.PostFormValue("coreSwitchAddress")
-	eventSettings.CoreSwitchUsername = r.PostFormValue("coreSwitchUsername")
 	eventSettings.CoreSwitchPassword = r.PostFormValue("coreSwitchPassword")
-	eventSettings.RedSwitchManagementEnabled = r.PostFormValue("redSwitchManagementEnabled") == "on"
-	eventSettings.RedSwitchAddress = r.PostFormValue("redSwitchAddress")
-	eventSettings.RedSwitchUsername = r.PostFormValue("redSwitchUsername")
-	eventSettings.RedSwitchPassword = r.PostFormValue("redSwitchPassword")
-	eventSettings.BlueSwitchManagementEnabled = r.PostFormValue("blueSwitchManagementEnabled") == "on"
-	eventSettings.BlueSwitchAddress = r.PostFormValue("blueSwitchAddress")
-	eventSettings.BlueSwitchUsername = r.PostFormValue("blueSwitchUsername")
-	eventSettings.BlueSwitchPassword = r.PostFormValue("blueSwitchPassword")
+	eventSettings.RedTeamSwitchManagementEnabled = r.PostFormValue("redTeamSwitchManagementEnabled") == "on"
+	eventSettings.RedTeamSwitchAddress = r.PostFormValue("redTeamSwitchAddress")
+	eventSettings.RedTeamSwitchPassword = r.PostFormValue("redTeamSwitchPassword")
+	eventSettings.RedFMSSwitchManagementEnabled = r.PostFormValue("redFMSSwitchManagementEnabled") == "on"
+	eventSettings.RedFMSSwitchAddress = r.PostFormValue("redFMSSwitchAddress")
+	eventSettings.RedFMSSwitchPassword = r.PostFormValue("redFMSSwitchPassword")
+	eventSettings.BlueTeamSwitchManagementEnabled = r.PostFormValue("blueTeamSwitchManagementEnabled") == "on"
+	eventSettings.BlueTeamSwitchAddress = r.PostFormValue("blueTeamSwitchAddress")
+	eventSettings.BlueTeamSwitchPassword = r.PostFormValue("blueTeamSwitchPassword")
+	eventSettings.BlueFMSSwitchManagementEnabled = r.PostFormValue("blueFMSSwitchManagementEnabled") == "on"
+	eventSettings.BlueFMSSwitchAddress = r.PostFormValue("blueFMSSwitchAddress")
+	eventSettings.BlueFMSSwitchPassword = r.PostFormValue("blueFMSSwitchPassword")
 	eventSettings.RedSCCAddress = r.PostFormValue("redSCCAddress")
 	eventSettings.BlueSCCAddress = r.PostFormValue("blueSCCAddress")
 	eventSettings.SCCUsername = r.PostFormValue("sccUsername")

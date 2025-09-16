@@ -96,8 +96,10 @@ func (arena *Arena) generateArenaStatusMessage() any {
 		RedSCCStatus          string
 		BlueSCCStatus         string
 		CoreSwitchStatus      string
-		RedSwitchStatus       string
-		BlueSwitchStatus      string
+		RedTeamSwitchStatus   string
+		RedFMSSwitchStatus    string
+		BlueTeamSwitchStatus  string
+		BlueFMSSwitchStatus   string
 		PlcIsHealthy          bool
 		FieldEStop            bool
 		PlcArmorBlockStatuses map[string]bool
@@ -112,7 +114,9 @@ func (arena *Arena) generateArenaStatusMessage() any {
 		arena.blueSCC.Status,
 		arena.coreSwitch.Status,
 		arena.redTeamSwitch.Status,
+		arena.redFMSSwitch.Status,
 		arena.blueTeamSwitch.Status,
+		arena.blueFMSSwitch.Status,
 		arena.Plc.IsHealthy(),
 		arena.Plc.GetFieldEStop(),
 		arena.Plc.GetArmorBlockStatuses(),

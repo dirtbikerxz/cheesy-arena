@@ -267,8 +267,10 @@ const handleArenaStatus = function (data) {
   $("#redSCCStatus").attr("data-status", data.RedSCCStatus);
   $("#blueSCCStatus").attr("data-status", data.BlueSCCStatus);
   $("#coreSwitchStatus").attr("data-status", data.CoreSwitchStatus);
-  $("#redSwitchStatus").attr("data-status", data.RedSwitchStatus);
-  $("#blueSwitchStatus").attr("data-status", data.BlueSwitchStatus);
+  $("#redTeamSwitchStatus").attr("data-status", data.RedTeamSwitchStatus);
+  $("#redFMSSwitchStatus").attr("data-status", data.RedFMSSwitchStatus);
+  $("#blueTeamSwitchStatus").attr("data-status", data.BlueTeamSwitchStatus);
+  $("#blueFMSSwitchStatus").attr("data-status", data.BlueFMSSwitchStatus);
 
   if (data.PlcIsHealthy) {
     $("#plcStatus").text("Connected");

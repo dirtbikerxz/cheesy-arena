@@ -102,25 +102,17 @@ UI for controlling match play and viewing team connection and field status.
           {{if .EventSettings.NetworkSecurityEnabled}}
           <h6>Network Status</h6>
           <p>
+            <h8>Core Networking</h8>
             <span class="badge badge-status" id="accessPointStatus">Access Point</span>
-            <!-- <br/><span class="badge badge-status" id="switchStatus">Switch</span> -->
-            {{if .EventSettings.SCCManagementEnabled}}
-            <br/>
-            <span class="badge badge-status" id="redSCCStatus">Red SCC</span><br/>
-            <span class="badge badge-status" id="blueSCCStatus">Blue SCC</span>
-            {{end}}
-            {{if .EventSettings.CoreSwitchManagementEnabled}}
-            <br/>
             <span class="badge badge-status" id="coreSwitchStatus">Core Switch</span>
-            {{end}}
-            {{if .EventSettings.RedSwitchManagementEnabled}}
             <br/>
-            <span class="badge badge-status" id="redSwitchStatus">Red Switch</span>
-            {{end}}
-            {{if .EventSettings.BlueSwitchManagementEnabled}}
+            <h8>Team Switches</h8>
             <br/>
-            <span class="badge badge-status" id="blueSwitchStatus">Blue Switch</span>
-            {{end}}
+            <span class="badge badge-status" id="redTeamSwitchStatus">Red Team</span>
+            <span class="badge badge-status" id="redFMSSwitchStatus">Red FMS</span>
+            <br/>
+            <span class="badge badge-status" id="blueTeamSwitchStatus">Blue Team</span>
+            <span class="badge badge-status" id="blueFMSSwitchStatus">Blue FMS</span>
           </p>
           {{end}}
           {{if .PlcIsEnabled}}

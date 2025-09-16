@@ -291,18 +291,11 @@ UI for configuring event settings.
                   <input type="checkbox" id="coreSwitchManagementEnabled"
                     name="coreSwitchManagementEnabled" {{if .CoreSwitchManagementEnabled}} checked{{end}}>
                 </div>
-              </div>
-              
+              </div>              
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">Core Switch Address</label>
                 <div class="col-lg-6">
                   <input type="text" class="form-control" name="coreSwitchAddress" value="{{.CoreSwitchAddress}}" placeholder="10.0.100.10">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Core Switch Username</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="coreSwitchUsername" value="{{.CoreSwitchUsername}}" placeholder="admin">
                 </div>
               </div>
               <div class="row mb-3">
@@ -314,59 +307,88 @@ UI for configuring event settings.
 
               <div class="row mb-3">
                 <label class="col-lg-8 control-label"
-                  for="redSwitchManagementEnabled">Enable Red Switch Management</label>
+                  for="redTeamSwitchManagementEnabled">Enable Red Team Switch Management</label>
                 <div class="col-lg-1 checkbox">
-                  <input type="checkbox" id="redSwitchManagementEnabled"
-                    name="redSwitchManagementEnabled" {{if .RedSwitchManagementEnabled}} checked{{end}}>
-                </div>
-              </div>
-              
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Red Switch Address</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="redSwitchAddress" value="{{.RedSwitchAddress}}" placeholder="10.0.100.11">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Red Switch Username</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="redSwitchUsername" value="{{.RedSwitchUsername}}" placeholder="admin">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Red Switch Password</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="redSwitchPassword" value="{{.RedSwitchPassword}}" placeholder="password">
+                  <input type="checkbox" id="redTeamSwitchManagementEnabled"
+                    name="redTeamSwitchManagementEnabled" {{if .RedTeamSwitchManagementEnabled}} checked{{end}}>
                 </div>
               </div>              
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Red Team Switch Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="redTeamSwitchAddress" value="{{.RedTeamSwitchAddress}}" placeholder="10.0.100.11">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Red Team Switch Password</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="redTeamSwitchPassword" value="{{.RedTeamSwitchPassword}}" placeholder="password">
+                </div>
+              </div>      
 
               <div class="row mb-3">
                 <label class="col-lg-8 control-label"
-                  for="blueSwitchManagementEnabled">Enable Blue Switch Management</label>
+                  for="redFMSSwitchManagementEnabled">Enable Red FMS Switch Management</label>
                 <div class="col-lg-1 checkbox">
-                  <input type="checkbox" id="blueSwitchManagementEnabled"
-                    name="blueSwitchManagementEnabled" {{if .BlueSwitchManagementEnabled}} checked{{end}}>
+                  <input type="checkbox" id="redFMSSwitchManagementEnabled"
+                    name="redFMSSwitchManagementEnabled" {{if .RedFMSSwitchManagementEnabled}} checked{{end}}>
+                </div>
+              </div>              
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Red FMS Switch Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="redFMSSwitchAddress" value="{{.RedFMSSwitchAddress}}" placeholder="10.0.100.12">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Red FMS Switch Password</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="redFMSSwitchPassword" value="{{.RedFMSSwitchPassword}}" placeholder="password">
+                </div>
+              </div>                 
+
+              <div class="row mb-3">
+                <label class="col-lg-8 control-label"
+                  for="blueTeamSwitchManagementEnabled">Enable Blue Team Switch Management</label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="blueTeamSwitchManagementEnabled"
+                    name="blueTeamSwitchManagementEnabled" {{if .BlueTeamSwitchManagementEnabled}} checked{{end}}>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Blue Team Switch Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="blueTeamSwitchAddress" value="{{.BlueTeamSwitchAddress}}" placeholder="10.0.100.13">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Blue Team Switch Password</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="blueTeamSwitchPassword" value="{{.BlueTeamSwitchPassword}}" placeholder="password">
+                </div>
+              </div>                 
+
+              <div class="row mb-3">
+                <label class="col-lg-8 control-label"
+                  for="blueFMSSwitchManagementEnabled">Enable Blue FMS Switch Management</label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="blueFMSSwitchManagementEnabled"
+                    name="blueFMSSwitchManagementEnabled" {{if .BlueFMSSwitchManagementEnabled}} checked{{end}}>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Blue FMS Switch Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="blueFMSSwitchAddress" value="{{.BlueFMSSwitchAddress}}" placeholder="10.0.100.14">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Blue FMS Switch Password</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="blueFMSSwitchPassword" value="{{.BlueFMSSwitchPassword}}" placeholder="password">
                 </div>
               </div>
 
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Blue Switch Address</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="blueSwitchAddress" value="{{.BlueSwitchAddress}}" placeholder="10.0.100.12">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Blue Switch Username</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="blueSwitchUsername" value="{{.BlueSwitchUsername}}" placeholder="admin">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Blue Switch Password</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="blueSwitchPassword" value="{{.BlueSwitchPassword}}" placeholder="password">
-                </div>
-              </div>
             </fieldset>
               <div class="row mb-3">
                 <legend>Driver Station Lite Mode</legend>
