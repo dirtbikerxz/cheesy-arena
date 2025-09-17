@@ -7,13 +7,14 @@ package web
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
 	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"text/template"
+
+	"github.com/Team254/cheesy-arena/game"
 
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/model"
@@ -234,6 +235,9 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("GET /setup/teams/generate_wpa_keys", web.teamsGenerateWpaKeysHandler)
 	mux.HandleFunc("GET /setup/teams/progress", web.teamsUpdateProgressBarHandler)
 	mux.HandleFunc("GET /setup/teams/refresh", web.teamsRefreshHandler)
+	mux.HandleFunc("GET /setup/rpi", web.rpiGetHandler)
+	mux.HandleFunc("POST /setup/rpi/run", web.rpiRunPostHandler)
+	mux.HandleFunc("GET /setup/rpi/status", web.rpiStatusHandler)
 	return mux
 }
 

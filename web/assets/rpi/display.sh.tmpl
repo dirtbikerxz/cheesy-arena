@@ -1,0 +1,124 @@
+#!/usr/bin/env bash
+# Display profile: static IP + LightDM autologin + Chromium kiosk.
+# Common helpers are inlined above by Go (renderRpiScript).
+set -Eeuo pipefail
+
+LOG=/var/log/rpi-setup.log
+exec > >(tee -a "$LOG") 2>&1
+
+TARGET_USER="{{.User}}"
+TARGET_URL="{{.Url}}"
+STATIC_IP="{{.StaticCidr}}"
+GATEWAY="{{.Gateway}}"
+DNS="{{.Dns}}"
+
+UHOME=$(getent passwd "$TARGET_USER" | cut -d: -f6 || echo "/home/$TARGET_USER")
+UIDX=$(id -u "$TARGET_USER" 2>/dev/null || echo 1000)
+
+log "==== DISPLAY PROFILE START ===="
+log "User=$TARGET_USER URL=$TARGET_URL IP=$STATIC_IP GW=$GATEWAY DNS=$DNS"
+rfkill unblock wifi 2>/dev/null || true
+export NM_CLI_NO_COLOR=1
+
+# ---------- Clean previous autostarts (idempotent) ----------
+log "Cleaning previous autostarts…"
+# systemd --user unit
+rm -f "$UHOME/.config/systemd/user/rpi-browser.service" 2>/dev/null || true
+sudo -u "$TARGET_USER" XDG_RUNTIME_DIR="/run/user/$UIDX" systemctl --user disable rpi-browser.service 2>/dev/null || true
+sudo -u "$TARGET_USER" XDG_RUNTIME_DIR="/run/user/$UIDX" systemctl --user stop rpi-browser.service 2>/dev/null || true
+# XDG autostart files
+rm -f /etc/xdg/autostart/rpi-browser.desktop 2>/dev/null || true
+rm -f "$UHOME/.config/autostart/rpi-browser.desktop" 2>/dev/null || true
+# LXDE autostart stanzas
+sed -i '/chromium-browser/d' "$UHOME/.config/lxsession/LXDE-pi/autostart" 2>/dev/null || true
+sed -i '/chromium-browser/d' /etc/xdg/lxsession/LXDE-pi/autostart 2>/dev/null || true
+
+# ---------- Ensure LightDM autologin into Wayfire ----------
+log "Ensuring LightDM autologin to $TARGET_USER (Wayfire)…"
+mkdir -p /etc/lightdm/lightdm.conf.d
+cat > /etc/lightdm/lightdm.conf.d/11-autologin.conf <<EOF
+[Seat:*]
+autologin-user=$TARGET_USER
+autologin-user-timeout=0
+# For Raspberry Pi OS Bookworm (Wayfire session)
+autologin-session=wayfire
+EOF
+systemctl set-default graphical.target || true
+systemctl enable lightdm >/dev/null 2>&1 || true
+loginctl enable-linger "$TARGET_USER" >/dev/null 2>&1 || true
+
+# ---------- Static IP (NetworkManager) ----------
+configure_static_ip "$STATIC_IP" "$GATEWAY" "$DNS"
+
+# ---------- Kiosk via systemd --user (most reliable) ----------
+log "Installing systemd --user unit for Chromium kiosk…"
+mkdir -p "$UHOME/.config/systemd/user"
+cat > "$UHOME/.config/systemd/user/rpi-browser.service" <<EOF
+[Unit]
+Description=Chromium Kiosk
+After=graphical-session.target network-online.target
+Wants=graphical-session.target
+
+[Service]
+Type=simple
+Environment=DISPLAY=:0
+Environment=XDG_RUNTIME_DIR=/run/user/$UIDX
+ExecStart=/usr/bin/chromium-browser \\
+  --kiosk \\
+  --incognito \\
+  --no-first-run \\
+  --no-default-browser-check \\
+  --disable-translate \\
+  --disable-sync \\
+  --disable-popup-blocking \\
+  --disable-session-crashed-bubble \\
+  --disable-infobars \\
+  --disable-features=ExtensionsToolbarMenu,ChromeWhatsNewUI,AutofillServerCommunication,PasswordImport \\
+  --overscroll-history-navigation=0 \\
+  --check-for-update-interval=31536000 \\
+  --simulate-critical-update=0 \\
+  --enforce-webrtc-ip-permission-check \\
+  --noerrdialogs \\
+  --disk-cache-dir=/dev/shm --disk-cache-size=104857600 \\
+  --test-type \\
+  --new-window "{{.Url}}"
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
+EOF
+chown -R "$TARGET_USER":"$TARGET_USER" "$UHOME/.config/systemd"
+
+# Enable service for the user (requires autologin + linger)
+sudo -u "$TARGET_USER" XDG_RUNTIME_DIR="/run/user/$UIDX" systemctl --user daemon-reload
+sudo -u "$TARGET_USER" XDG_RUNTIME_DIR="/run/user/$UIDX" systemctl --user enable rpi-browser.service
+
+# ---------- Wayfire fallback (optional but helpful) ----------
+log "Configuring Wayfire autostart fallback…"
+mkdir -p "$UHOME/.config"
+WAYFIRE="$UHOME/.config/wayfire.ini"
+if ! grep -q '^\[autostart\]' "$WAYFIRE" 2>/dev/null; then
+  printf '[autostart]\n' >> "$WAYFIRE"
+fi
+# replace existing chromium=… or append
+if grep -q '^chromium[[:space:]]*=' "$WAYFIRE" 2>/dev/null; then
+  sed -i "s|^chromium[[:space:]]*=.*|chromium=sh -lc 'sleep 2; DISPLAY=:0 XDG_RUNTIME_DIR=/run/user/$UIDX /usr/bin/chromium-browser --kiosk --incognito --no-first-run --no-default-browser-check --disable-session-crashed-bubble --new-window \"${TARGET_URL}\"'|" "$WAYFIRE"
+else
+  printf "chromium=sh -lc 'sleep 2; DISPLAY=:0 XDG_RUNTIME_DIR=/run/user/%s /usr/bin/chromium-browser --kiosk --incognito --no-first-run --no-default-browser-check --disable-session-crashed-bubble --new-window \"%s\"'\n" "$UIDX" "$TARGET_URL" >> "$WAYFIRE"
+fi
+chown "$TARGET_USER":"$TARGET_USER" "$WAYFIRE" 2>/dev/null || true
+
+# ---------- Diagnostics ----------
+nmcli d show eth0 2>/dev/null | sed 's/^/  /' || true
+ip -brief addr | sed 's/^/  /' || true
+
+# ---------- Immediate launch so you see it now ----------
+log "Launching Chromium immediately (DISPLAY=:0)…"
+sudo -u "$TARGET_USER" env XDG_RUNTIME_DIR="/run/user/$UIDX" DISPLAY=":0" sh -lc \
+  "/usr/bin/chromium-browser --kiosk --incognito --no-first-run --no-default-browser-check --disable-session-crashed-bubble --new-window \"$TARGET_URL\"" >/dev/null 2>&1 || true
+
+# ---------- Reboot to lock in settings ----------
+log "==== DISPLAY PROFILE END ===="
+sudo reboot
+exit 0
