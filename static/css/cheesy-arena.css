@@ -70,6 +70,13 @@
 .bypass-status {
   cursor: pointer;
 }
+[data-rpi-online] {
+  position: relative;
+}
+.rpi-status {
+  margin-top: 4px;
+  font-size: 11px;
+}
 [data-status-ok="true"], [data-status-ternary="2"] {
   background-color: #0e8;
 }
@@ -90,6 +97,25 @@
 }
 .btn-match-play-narrow {
   width: 139px;
+}
+.bypass-status[data-rpi-online="true"] {
+  position: relative;
+}
+.bypass-status[data-rpi-online]::after {
+  content: "";
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  position: absolute;
+  right: 4px;
+  top: 8px;
+}
+.bypass-status[data-rpi-online="true"]::after {
+  background-color: #0c6;
+}
+.bypass-status[data-rpi-online="false"]::after {
+  background-color: #666;
 }
 .badge-scoring {
   background-color: #e66;

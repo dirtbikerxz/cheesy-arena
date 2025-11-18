@@ -53,6 +53,13 @@ const (
 	PostTimeout
 )
 
+type StationRpiStatus struct {
+	Online      bool
+	RemoteEStop bool
+	RemoteAStop bool
+	LastUpdate  time.Time
+}
+
 type Arena struct {
 	Database         *model.Database
 	EventSettings    *model.EventSettings
@@ -1209,6 +1216,24 @@ func (arena *Arena) UpdateRemoteStops(station string, eStop, aStop bool) error {
 		arena.ArenaStatusNotifier.Notify()
 	}
 	return nil
+}
+
+func (arena *Arena) StationRpiStatuses() map[string]StationRpiStatus {
+	statuses := make(map[string]StationRpiStatus, len(arena.AllianceStations))
+	useRemote := arena.EventSettings != nil && arena.EventSettings.UseStationRpiStops
+	now := time.Now()
+	for name, station := range arena.AllianceStations {
+		status := StationRpiStatus{
+			RemoteEStop: station.RemoteEStop,
+			RemoteAStop: station.RemoteAStop,
+			LastUpdate:  station.RemoteLastUpdate,
+		}
+		if useRemote && !status.LastUpdate.IsZero() && now.Sub(status.LastUpdate) <= remoteStopTimeout {
+			status.Online = true
+		}
+		statuses[name] = status
+	}
+	return statuses
 }
 
 func (arena *Arena) handleSounds(matchTimeSec float64) {

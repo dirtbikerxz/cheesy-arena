@@ -142,6 +142,22 @@ body[data-position=right] #inMatch #blueScore {
   font-size: 120px;
   color: #fff;
 }
+#rpiStatus {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  height: 120px;
+  line-height: 120px;
+  font-size: 40px;
+  background-color: #666;
+  text-transform: uppercase;
+}
+#rpiStatus[data-rpi-online="true"] {
+  background-color: #0c6;
+  color: #000;
+}
 #preMatch .databar#disabled {
   font-family: "FuturaLTBold";
   display: none;

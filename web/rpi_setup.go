@@ -14,6 +14,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/Team254/cheesy-arena/field"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -363,6 +364,7 @@ func (web *Web) rpiStopsGetHandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]any{
 		"EventSettings": web.safeEventSettings(),
 		"RpiStops":      last,
+		"StationStatus": web.buildStationRpiStatusView(),
 	}
 	if err = tpl.ExecuteTemplate(w, "base", data); err != nil {
 		handleWebErr(w, err)
@@ -542,9 +544,42 @@ func (web *Web) rpiStopsStatusHandler(w http.ResponseWriter, r *http.Request) {
 	state, log := rpiStopsGlobal.snapshot()
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{
-		"state": state,
-		"log":   log,
+		"state":         state,
+		"log":           log,
+		"stationStatus": web.buildStationRpiStatusView(),
 	})
+}
+
+type stationRpiStatusView struct {
+	Station     string
+	Online      bool
+	RemoteEStop bool
+	RemoteAStop bool
+	LastUpdate  string
+}
+
+func (web *Web) buildStationRpiStatusView() []stationRpiStatusView {
+	statusMap := web.arena.StationRpiStatuses()
+	order := []string{"R1", "R2", "R3", "B1", "B2", "B3"}
+	result := make([]stationRpiStatusView, 0, len(order))
+	for _, station := range order {
+		status, ok := statusMap[station]
+		if !ok {
+			status = field.StationRpiStatus{}
+		}
+		lastUpdate := "Never"
+		if !status.LastUpdate.IsZero() {
+			lastUpdate = status.LastUpdate.Format("15:04:05")
+		}
+		result = append(result, stationRpiStatusView{
+			Station:     station,
+			Online:      status.Online,
+			RemoteEStop: status.RemoteEStop,
+			RemoteAStop: status.RemoteAStop,
+			LastUpdate:  lastUpdate,
+		})
+	}
+	return result
 }
 
 func isValidStationId(station string) bool {

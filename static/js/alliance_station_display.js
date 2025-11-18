@@ -76,6 +76,22 @@ var handleMatchLoad = function (data) {
 // Handles a websocket message to update the team connection status.
 var handleArenaStatus = function (data) {
   stationStatus = data.AllianceStations[station];
+  const rpiStatusMap = data.StationRpiStatuses;
+  const rpiElement = $("#rpiStatus");
+  const stationRpi = rpiStatusMap ? rpiStatusMap[station] : null;
+  if (stationRpi) {
+    rpiElement.attr("data-rpi-online", stationRpi.Online ? "true" : "false");
+    if (stationRpi.RemoteEStop) {
+      rpiElement.text("E-STOP");
+    } else if (stationRpi.RemoteAStop) {
+      rpiElement.text("A-STOP");
+    } else {
+      rpiElement.text("RPi Ready");
+    }
+  } else {
+    rpiElement.attr("data-rpi-online", "false");
+    rpiElement.text("RPi N/A");
+  }
   var blink = false;
   if (stationStatus && stationStatus.Bypass) {
     $("#match").attr("data-status", "bypass");

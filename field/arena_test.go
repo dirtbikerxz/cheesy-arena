@@ -1010,6 +1010,29 @@ func TestPlcFieldEStopWithPlcDisabled(t *testing.T) {
 	assert.Equal(t, AutoPeriod, arena.MatchState)
 }
 
+func TestStationRpiStatuses(t *testing.T) {
+	arena := setupTestArena(t)
+	arena.EventSettings.UseStationRpiStops = true
+	now := time.Now()
+
+	arena.AllianceStations["R1"].RemoteLastUpdate = now
+	arena.AllianceStations["R1"].RemoteEStop = true
+	arena.AllianceStations["R1"].RemoteAStop = false
+	arena.AllianceStations["R2"].RemoteLastUpdate = now.Add(-10 * time.Second)
+	arena.AllianceStations["R2"].RemoteEStop = false
+	arena.AllianceStations["R2"].RemoteAStop = true
+
+	statuses := arena.StationRpiStatuses()
+	r1 := statuses["R1"]
+	assert.True(t, r1.Online)
+	assert.True(t, r1.RemoteEStop)
+	assert.False(t, r1.RemoteAStop)
+	r2 := statuses["R2"]
+	assert.False(t, r2.Online)
+	assert.False(t, r2.RemoteEStop)
+	assert.True(t, r2.RemoteAStop)
+}
+
 func TestPlcMatchCycleEvergreen(t *testing.T) {
 	arena := setupTestArena(t)
 	var plc FakePlc

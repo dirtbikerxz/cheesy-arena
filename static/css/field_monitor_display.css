@@ -128,6 +128,17 @@ body {
 .team-box[data-status-ok="false"] {
   background-color: #f44;
 }
+.team-box.rpi-status {
+  font-size: 1vw;
+  text-transform: uppercase;
+}
+.team-box.rpi-status[data-rpi-online="true"] {
+  background-color: #0c6;
+  color: #000;
+}
+.team-box.rpi-status[data-rpi-online="false"] {
+  background-color: #666;
+}
 .team-box i {
   margin-right: 0.5vw;
 }

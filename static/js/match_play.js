@@ -168,6 +168,18 @@ const handleArenaStatus = function (data) {
     }
     $(`#status${station} .radio-status`).attr("data-status-ternary", radioStatus);
 
+    const rpiInfo = data.StationRpiStatuses ? data.StationRpiStatuses[station] : null;
+    const bypassElement = $("#status" + station + " .bypass-status");
+    if (rpiInfo) {
+      bypassElement.attr("data-rpi-online", rpiInfo.Online);
+      bypassElement.attr("data-rpi-e", rpiInfo.RemoteEStop);
+      bypassElement.attr("data-rpi-a", rpiInfo.RemoteAStop);
+    } else {
+      bypassElement.attr("data-rpi-online", "");
+      bypassElement.attr("data-rpi-e", "");
+      bypassElement.attr("data-rpi-a", "");
+    }
+
     if (stationStatus.EStop) {
       $("#status" + station + " .bypass-status").attr("data-status-ok", false);
       $("#status" + station + " .bypass-status").text("ES");

@@ -144,6 +144,23 @@ const handleArenaStatus = function (data) {
       }
     }
 
+    const rpiStatus = data.StationRpiStatuses ? data.StationRpiStatuses[station] : null;
+    const rpiElement = $(`#status${station} .rpi-status`);
+
+    if (rpiStatus) {
+      rpiElement.attr("data-rpi-online", rpiStatus.Online ? "true" : "false");
+      if (rpiStatus.RemoteEStop) {
+        rpiElement.text("E-STOP");
+      } else if (rpiStatus.RemoteAStop) {
+        rpiElement.text("A-STOP");
+      } else {
+        rpiElement.text("RPi Ready");
+      }
+    } else {
+      rpiElement.attr("data-rpi-online", "false");
+      rpiElement.text("RPi N/A");
+    }
+
     if (stationStatus.EStop) {
       teamBypassElement.attr("data-status-ok", false);
       teamBypassElement.text("E-STP");

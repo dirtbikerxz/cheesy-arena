@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -37,9 +38,19 @@ func (web *Web) stationStopsApiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	station := strings.ToUpper(r.PathValue("stationId"))
+	oldStatuses := web.arena.StationRpiStatuses()
 	if err := web.arena.UpdateRemoteStops(station, req.EStop, req.AStop); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
+	newStatuses := web.arena.StationRpiStatuses()
+	oldStatus := oldStatuses[station]
+	newStatus := newStatuses[station]
+	if oldStatus.Online != newStatus.Online {
+		log.Printf("Station RPi %s online=%t", station, newStatus.Online)
+	}
+	if oldStatus.RemoteEStop != newStatus.RemoteEStop || oldStatus.RemoteAStop != newStatus.RemoteAStop {
+		log.Printf("Station RPi %s remote E=%t A=%t", station, newStatus.RemoteEStop, newStatus.RemoteAStop)
 	}
 
 	w.Header().Set("Content-Type", "application/json")

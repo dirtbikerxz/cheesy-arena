@@ -74,10 +74,10 @@ Display showing robot connection status.
     <i class="bi-chat-left-fill"></i>
     <div onclick="editFtaNotes(this);"></div>
   </div>
-  <div class="team-box-row">
-    <div id="{{.side}}Team{{.position}}Ethernet" class="team-box center"
-      title="Driver Station Ethernet Connected&#10;Trip Time (ms)">ETH
-    </div>
+    <div class="team-box-row">
+      <div id="{{.side}}Team{{.position}}Ethernet" class="team-box center"
+        title="Driver Station Ethernet Connected&#10;Trip Time (ms)">ETH
+      </div>
     <div id="{{.side}}Team{{.position}}Ds" class="team-box center"
       title="Driver Station Software Running&#10;Missed Packets">DS
     </div>
@@ -96,7 +96,8 @@ Display showing robot connection status.
         <div class="team-missed-packets">MP <span id="{{.side}}Team{{.position}}MissedPackets"></span></div>
       </div>
     </div>
-    <div id="{{.side}}Team{{.position}}Bypass" class="team-box center" title="Emergency-Stopped or Bypassed"></div>
+      <div id="{{.side}}Team{{.position}}Bypass" class="team-box center" title="Emergency-Stopped or Bypassed"></div>
+      <div id="{{.side}}Team{{.position}}Rpi" class="team-box center rpi-status">RPi</div>
+    </div>
   </div>
-</div>
 {{end}}
