@@ -867,6 +867,65 @@ func TestPlcEStopAStop(t *testing.T) {
 	assert.Equal(t, false, arena.AllianceStations["B3"].EStop)
 }
 
+func TestRemoteStationStops(t *testing.T) {
+	arena := setupTestArena(t)
+	arena.EventSettings.UseStationRpiStops = true
+	for station := range arena.AllianceStations {
+		arena.AllianceStations[station].Bypass = true
+	}
+	assert.Nil(t, arena.StartMatch())
+
+	arena.Update()
+	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
+	arena.Update()
+	assert.Equal(t, AutoPeriod, arena.MatchState)
+
+	err := arena.UpdateRemoteStops("R1", true, false)
+	assert.Nil(t, err)
+	arena.Update()
+	assert.True(t, arena.AllianceStations["R1"].EStop)
+
+	err = arena.UpdateRemoteStops("R1", false, false)
+	assert.Nil(t, err)
+	arena.MatchStartTime = time.Now().Add(
+		-time.Duration(
+			game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+
+				game.MatchTiming.PauseDurationSec+game.MatchTiming.TeleopDurationSec,
+		) * time.Second,
+	)
+	arena.Update()
+	assert.False(t, arena.AllianceStations["R1"].EStop)
+}
+
+func TestRemoteStationAStop(t *testing.T) {
+	arena := setupTestArena(t)
+	arena.EventSettings.UseStationRpiStops = true
+	for station := range arena.AllianceStations {
+		arena.AllianceStations[station].Bypass = true
+	}
+	assert.Nil(t, arena.StartMatch())
+
+	arena.Update()
+	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
+	arena.Update()
+	assert.Equal(t, AutoPeriod, arena.MatchState)
+
+	err := arena.UpdateRemoteStops("R2", false, true)
+	assert.Nil(t, err)
+	arena.Update()
+	assert.True(t, arena.AllianceStations["R2"].AStop)
+
+	err = arena.UpdateRemoteStops("R2", false, false)
+	assert.Nil(t, err)
+	arena.MatchStartTime = time.Now().Add(
+		-time.Duration(
+			game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec,
+		) * time.Second,
+	)
+	arena.Update()
+	assert.False(t, arena.AllianceStations["R2"].AStop)
+}
+
 func TestPlcEStopAStopWithPlcDisabled(t *testing.T) {
 	arena := setupTestArena(t)
 	var plc FakePlc

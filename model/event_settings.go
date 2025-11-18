@@ -74,6 +74,8 @@ type EventSettings struct {
 	BlueFMSSwitchManagementEnabled  bool
 	BlueFMSSwitchAddress            string
 	BlueFMSSwitchPassword           string
+	UseStationRpiStops             bool
+	StationRpiSecret               string
 	RedSCCAddress                   string
 	BlueSCCAddress                  string
 	SCCUsername                     string

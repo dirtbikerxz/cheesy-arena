@@ -5,6 +5,9 @@ package web
 
 import (
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/tournament"
@@ -188,4 +191,44 @@ func TestBracketSvgApiDoubleElimination(t *testing.T) {
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "image/svg+xml", recorder.Header()["Content-Type"][0])
 	assert.Contains(t, recorder.Body.String(), "Best-of-3")
+}
+
+func TestStationStopsApiDisabled(t *testing.T) {
+	web := setupTestWeb(t)
+
+	recorder := httptest.NewRecorder()
+	req := httptest.NewRequest("POST", "/api/stations/r1/stops", strings.NewReader(`{"eStop":true}`))
+	req.Header.Set("Content-Type", "application/json")
+	web.newHandler().ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusServiceUnavailable, recorder.Code)
+}
+
+func TestStationStopsApiSecretMismatch(t *testing.T) {
+	web := setupTestWeb(t)
+	web.arena.EventSettings.UseStationRpiStops = true
+	web.arena.EventSettings.StationRpiSecret = "cheesy"
+
+	recorder := httptest.NewRecorder()
+	req := httptest.NewRequest("POST", "/api/stations/r1/stops", strings.NewReader(`{"eStop":true,"secret":"wrong"}`))
+	req.Header.Set("Content-Type", "application/json")
+	web.newHandler().ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusForbidden, recorder.Code)
+}
+
+func TestStationStopsApiSuccess(t *testing.T) {
+	web := setupTestWeb(t)
+	web.arena.EventSettings.UseStationRpiStops = true
+	web.arena.EventSettings.StationRpiSecret = "cheesy"
+
+	recorder := httptest.NewRecorder()
+	req := httptest.NewRequest("POST", "/api/stations/R1/stops", strings.NewReader(`{"eStop":true,"aStop":true,"secret":"cheesy"}`))
+	req.Header.Set("Content-Type", "application/json")
+	web.newHandler().ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+	assert.True(t, web.arena.AllianceStations["R1"].RemoteEStop)
+	assert.True(t, web.arena.AllianceStations["R1"].RemoteAStop)
+	assert.False(t, web.arena.AllianceStations["R1"].RemoteLastUpdate.IsZero())
 }

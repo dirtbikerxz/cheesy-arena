@@ -140,6 +140,7 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("GET /api/matches/{type}", web.matchesApiHandler)
 	mux.HandleFunc("GET /api/rankings", web.rankingsApiHandler)
 	mux.HandleFunc("GET /api/sponsor_slides", web.sponsorSlidesApiHandler)
+	mux.HandleFunc("POST /api/stations/{stationId}/stops", web.stationStopsApiHandler)
 	mux.HandleFunc("GET /api/teams/{teamId}/avatar", web.teamAvatarsApiHandler)
 	mux.HandleFunc("GET /display", web.placeholderDisplayHandler)
 	mux.HandleFunc("GET /display/websocket", web.placeholderDisplayWebsocketHandler)
@@ -238,6 +239,9 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("GET /setup/rpi", web.rpiGetHandler)
 	mux.HandleFunc("POST /setup/rpi/run", web.rpiRunPostHandler)
 	mux.HandleFunc("GET /setup/rpi/status", web.rpiStatusHandler)
+	mux.HandleFunc("GET /setup/rpi/stops", web.rpiStopsGetHandler)
+	mux.HandleFunc("POST /setup/rpi/stops/run", web.rpiStopsRunPostHandler)
+	mux.HandleFunc("GET /setup/rpi/stops/status", web.rpiStopsStatusHandler)
 	return mux
 }
 

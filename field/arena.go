@@ -33,6 +33,7 @@ const (
 	postTimeoutSec           = 4
 	preLoadNextMatchDelaySec = 5
 	scheduledBreakDelaySec   = 5
+	remoteStopTimeout        = 5 * time.Second
 	earlyLateThresholdMin    = 2.5
 	MaxMatchGapMin           = 20
 )
@@ -114,6 +115,9 @@ type AllianceStation struct {
 	Team       *model.Team
 	WifiStatus network.TeamWifiStatus
 	aStopReset bool
+	RemoteEStop bool
+	RemoteAStop bool
+	RemoteLastUpdate time.Time
 }
 
 // Creates the arena and sets it to its initial state.
@@ -1039,12 +1043,12 @@ func (arena *Arena) handlePlcInputOutput() {
 	}
 	redEStops, blueEStops := arena.Plc.GetTeamEStops()
 	redAStops, blueAStops := arena.Plc.GetTeamAStops()
-	arena.handleTeamStop("R1", redEStops[0], redAStops[0])
-	arena.handleTeamStop("R2", redEStops[1], redAStops[1])
-	arena.handleTeamStop("R3", redEStops[2], redAStops[2])
-	arena.handleTeamStop("B1", blueEStops[0], blueAStops[0])
-	arena.handleTeamStop("B2", blueEStops[1], blueAStops[1])
-	arena.handleTeamStop("B3", blueEStops[2], blueAStops[2])
+	arena.applyStationStops("R1", redEStops[0], redAStops[0])
+	arena.applyStationStops("R2", redEStops[1], redAStops[1])
+	arena.applyStationStops("R3", redEStops[2], redAStops[2])
+	arena.applyStationStops("B1", blueEStops[0], blueAStops[0])
+	arena.applyStationStops("B2", blueEStops[1], blueAStops[1])
+	arena.applyStationStops("B3", blueEStops[2], blueAStops[2])
 	redEthernets, blueEthernets := arena.Plc.GetEthernetConnected()
 	arena.AllianceStations["R1"].Ethernet = redEthernets[0]
 	arena.AllianceStations["R2"].Ethernet = redEthernets[1]
@@ -1164,6 +1168,40 @@ func (arena *Arena) handleTeamStop(station string, eStopState, aStopState bool) 
 		allianceStation.AStop = false
 		allianceStation.aStopReset = true
 	}
+}
+
+func (arena *Arena) applyStationStops(station string, plcEStop, plcAStop bool) {
+	allianceStation := arena.AllianceStations[station]
+	if allianceStation == nil {
+		return
+	}
+
+	useRemote := arena.EventSettings != nil && arena.EventSettings.UseStationRpiStops
+	remoteEStop := allianceStation.RemoteEStop
+	remoteAStop := allianceStation.RemoteAStop
+	if !useRemote || time.Since(allianceStation.RemoteLastUpdate) > remoteStopTimeout {
+		remoteEStop = false
+		remoteAStop = false
+	}
+
+	arena.handleTeamStop(station, plcEStop || remoteEStop, plcAStop || remoteAStop)
+}
+
+func (arena *Arena) UpdateRemoteStops(station string, eStop, aStop bool) error {
+	if arena.EventSettings != nil && !arena.EventSettings.UseStationRpiStops {
+		return nil
+	}
+	allianceStation, ok := arena.AllianceStations[station]
+	if !ok {
+		return fmt.Errorf("invalid alliance station '%s'", station)
+	}
+	allianceStation.RemoteEStop = eStop
+	allianceStation.RemoteAStop = aStop
+	allianceStation.RemoteLastUpdate = time.Now()
+	if arena.ArenaStatusNotifier != nil {
+		arena.ArenaStatusNotifier.Notify()
+	}
+	return nil
 }
 
 func (arena *Arena) handleSounds(matchTimeSec float64) {

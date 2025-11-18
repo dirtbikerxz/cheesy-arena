@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+# Station stop profile: static IP + persistent background client for the button GPIOs.
+# Common helpers are inlined above by Go (renderRpiTemplate).
+set -Eeuo pipefail
+
+LOG=/var/log/cheesy-stops.log
+exec > >(tee -a "$LOG") 2>&1
+
+TARGET_USER="{{.User}}"
+STATIC_IP="{{.StaticCidr}}"
+GATEWAY="{{.Gateway}}"
+DNS="{{.Dns}}"
+API_URL={{printf "%q" .ApiUrl}}
+STATION_ID={{printf "%q" .StationId}}
+SECRET={{printf "%q" .Secret}}
+
+log "==== STATION RPI STOP PROFILE START ===="
+log "Station=${STATION_ID} API=${API_URL}"
+
+# Configure the static network (NetworkManager)
+configure_static_ip "$STATIC_IP" "$GATEWAY" "$DNS"
+
+mkdir -p /opt/cheesy-stops
+cat > /opt/cheesy-stops/station_stops_client.py <<'EOF'
+#!/usr/bin/env python3
+import json
+import subprocess
+import time
+import urllib.error
+import urllib.request
+
+API_URL = {{printf "%q" .ApiUrl}}
+SECRET = {{printf "%q" .Secret}}
+ESTOP_PIN = 16
+ASTOP_PIN = 12
+POLL_INTERVAL = 0.05
+HEARTBEAT_INTERVAL = 0.5
+
+def ensure_gpio():
+    try:
+        import RPi.GPIO as GPIO
+    except ImportError:
+        print("RPi.GPIO missing; attempting to install python3-rpi.gpio")
+        subprocess.run(["apt-get", "update"], check=False)
+        subprocess.run(["apt-get", "install", "-y", "python3-rpi.gpio"], check=False)
+        import RPi.GPIO as GPIO  # type: ignore
+    return GPIO
+
+GPIO = ensure_gpio()
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(ESTOP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(ASTOP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+def read_pressed(pin):
+    return GPIO.input(pin) == GPIO.LOW
+
+def send_status(e_stop, a_stop):
+    payload = {"eStop": e_stop, "aStop": a_stop}
+    if SECRET:
+        payload["secret"] = SECRET
+    data = json.dumps(payload).encode()
+    req = urllib.request.Request(API_URL, data=data, headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            resp.read()
+    except urllib.error.HTTPError as exc:
+        print(f"HTTP error: {exc.code} {exc.reason}")
+    except urllib.error.URLError as exc:
+        print(f"Connection error: {exc}")
+    except Exception as exc:
+        print(f"Unexpected error sending status: {exc}")
+
+def main():
+    last_estop = None
+    last_astop = None
+    last_sent = 0
+    while True:
+        e_stop = read_pressed(ESTOP_PIN)
+        a_stop = read_pressed(ASTOP_PIN)
+        now = time.time()
+        if e_stop != last_estop or a_stop != last_astop or now - last_sent >= HEARTBEAT_INTERVAL:
+            send_status(e_stop, a_stop)
+            last_estop = e_stop
+            last_astop = a_stop
+            last_sent = now
+        time.sleep(POLL_INTERVAL)
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Station stop client interrupted")
+EOF
+
+chown root:root /opt/cheesy-stops/station_stops_client.py
+chmod +x /opt/cheesy-stops/station_stops_client.py
+
+cat > /etc/systemd/system/cheesy-stops.service <<EOF
+[Unit]
+Description=Cheesy Arena Station Stop Buttons Client
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/cheesy-stops/station_stops_client.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable --now cheesy-stops.service >/dev/null 2>&1 || true
+
+log "==== STATION RPI STOP PROFILE END ===="

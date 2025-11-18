@@ -120,6 +120,8 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.TeamSignBlueTimerId, _ = strconv.Atoi(r.PostFormValue("teamSignBlueTimerId"))
 	eventSettings.UseLiteUdpPort = r.PostFormValue("useLiteUdpPort") == "on"
 	eventSettings.BlackmagicAddresses = r.PostFormValue("blackmagicAddresses")
+	eventSettings.UseStationRpiStops = r.PostFormValue("useStationRpiStops") == "on"
+	eventSettings.StationRpiSecret = strings.TrimSpace(r.PostFormValue("stationRpiSecret"))
 	eventSettings.WarmupDurationSec, _ = strconv.Atoi(r.PostFormValue("warmupDurationSec"))
 	eventSettings.AutoDurationSec, _ = strconv.Atoi(r.PostFormValue("autoDurationSec"))
 	eventSettings.PauseDurationSec, _ = strconv.Atoi(r.PostFormValue("pauseDurationSec"))

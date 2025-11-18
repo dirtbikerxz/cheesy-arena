@@ -401,6 +401,23 @@ UI for configuring event settings.
                     {{if .UseLiteUdpPort}} checked{{end}}>
                 </div>
               </div>
+              <div class="row mb-3">
+                <legend>Station RPi Stop Buttons</legend>
+                <p>Enable this to process physical E-Stop and A-Stop button reports from the station RPis.</p>
+                <label class="col-lg-8 control-label" for="useStationRpiStops">Enable Station RPi Stops</label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="useStationRpiStops" name="useStationRpiStops"
+                    {{if .UseStationRpiStops}} checked{{end}}>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Station RPi Secret</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="stationRpiSecret"
+                    value="{{.StationRpiSecret}}" placeholder="Optional shared secret">
+                  <p class="help-block">If set, the RPis must include this token when calling the stop API.</p>
+                </div>
+              </div>
             </fieldset>
           </div>
           <div class="tab-pane" id="automation" role="tabpanel">
