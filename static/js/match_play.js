@@ -337,19 +337,7 @@ const updateRpiStatusTable = function(statuses) {
     row.querySelector(".rpi-online").textContent = status && status.Online ? "Online" : "Offline";
     row.querySelector(".rpi-estop").textContent = status && status.RemoteEStop ? "Active" : "—";
     row.querySelector(".rpi-astop").textContent = status && status.RemoteAStop ? "Active" : "—";
-    row.querySelector(".rpi-last").textContent = formatRpiTimestamp(status && status.LastUpdate);
   });
-};
-
-const formatRpiTimestamp = function(timestamp) {
-  if (!timestamp) {
-    return "Never";
-  }
-  const parsed = new Date(timestamp);
-  if (isNaN(parsed)) {
-    return timestamp;
-  }
-  return parsed.toLocaleTimeString();
 };
 
 // Handles a websocket message to populate the final score data.

@@ -555,7 +555,6 @@ type stationRpiStatusView struct {
 	Online      bool
 	RemoteEStop bool
 	RemoteAStop bool
-	LastUpdate  string
 }
 
 func (web *Web) buildStationRpiStatusView() []stationRpiStatusView {
@@ -567,16 +566,11 @@ func (web *Web) buildStationRpiStatusView() []stationRpiStatusView {
 		if !ok {
 			status = field.StationRpiStatus{}
 		}
-		lastUpdate := "Never"
-		if !status.LastUpdate.IsZero() {
-			lastUpdate = status.LastUpdate.Format("15:04:05")
-		}
 		result = append(result, stationRpiStatusView{
 			Station:     station,
 			Online:      status.Online,
 			RemoteEStop: status.RemoteEStop,
 			RemoteAStop: status.RemoteAStop,
-			LastUpdate:  lastUpdate,
 		})
 	}
 	return result
