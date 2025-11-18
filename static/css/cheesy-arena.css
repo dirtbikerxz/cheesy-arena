@@ -70,10 +70,8 @@
 .bypass-status {
   cursor: pointer;
 }
-[data-rpi-online] {
   position: relative;
 }
-.rpi-status {
   margin-top: 4px;
   font-size: 11px;
 }
@@ -98,10 +96,15 @@
 .btn-match-play-narrow {
   width: 139px;
 }
-.bypass-status[data-rpi-online="true"] {
+.card#rpiStatusCard .table {
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+.card#rpiStatusCard th, .card#rpiStatusCard td {
+  padding: 0.2rem 0.4rem;
+}
   position: relative;
 }
-.bypass-status[data-rpi-online]::after {
   content: "";
   display: block;
   width: 10px;
@@ -111,10 +114,8 @@
   right: 4px;
   top: 8px;
 }
-.bypass-status[data-rpi-online="true"]::after {
   background-color: #0c6;
 }
-.bypass-status[data-rpi-online="false"]::after {
   background-color: #666;
 }
 .badge-scoring {

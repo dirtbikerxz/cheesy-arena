@@ -77,20 +77,24 @@ var handleMatchLoad = function (data) {
 var handleArenaStatus = function (data) {
   stationStatus = data.AllianceStations[station];
   const rpiStatusMap = data.StationRpiStatuses;
-  const rpiElement = $("#rpiStatus");
+  const rpiIndicator = $("#rpiIndicator");
   const stationRpi = rpiStatusMap ? rpiStatusMap[station] : null;
   if (stationRpi) {
-    rpiElement.attr("data-rpi-online", stationRpi.Online ? "true" : "false");
+    rpiIndicator.attr("data-online", stationRpi.Online ? "true" : "false");
     if (stationRpi.RemoteEStop) {
-      rpiElement.text("E-STOP");
+      rpiIndicator.attr("data-state", "E");
+      rpiIndicator.find(".rpi-text").text("E-STOP");
     } else if (stationRpi.RemoteAStop) {
-      rpiElement.text("A-STOP");
+      rpiIndicator.attr("data-state", "A");
+      rpiIndicator.find(".rpi-text").text("A-STOP");
     } else {
-      rpiElement.text("RPi Ready");
+      rpiIndicator.attr("data-state", "OK");
+      rpiIndicator.find(".rpi-text").text("RPi Ready");
     }
   } else {
-    rpiElement.attr("data-rpi-online", "false");
-    rpiElement.text("RPi N/A");
+    rpiIndicator.attr("data-online", "false");
+    rpiIndicator.attr("data-state", "OK");
+    rpiIndicator.find(".rpi-text").text("RPi N/A");
   }
   var blink = false;
   if (stationStatus && stationStatus.Bypass) {

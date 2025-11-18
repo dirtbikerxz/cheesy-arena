@@ -223,6 +223,33 @@ UI for controlling match play and viewing team connection and field status.
         </form>
       </div>
     </div>
+    <div class="card card-body bg-body-tertiary mt-3" id="rpiStatusCard">
+      <h5>Station RPi Status</h5>
+      <div class="table-responsive">
+        <table class="table table-sm table-striped" id="rpiStatusTable">
+          <thead>
+            <tr>
+              <th>Station</th>
+              <th>Online</th>
+              <th>E-Stop</th>
+              <th>A-Stop</th>
+              <th>Last Seen</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range $station := .StationIds}}
+            <tr data-station="{{$station}}">
+              <td>{{$station}}</td>
+              <td class="rpi-online">Offline</td>
+              <td class="rpi-estop">&mdash;</td>
+              <td class="rpi-astop">&mdash;</td>
+              <td class="rpi-last">Never</td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 <div id="confirmDiscardResults" class="modal" style="top: 20%;">

@@ -142,21 +142,36 @@ body[data-position=right] #inMatch #blueScore {
   font-size: 120px;
   color: #fff;
 }
-#rpiStatus {
+#rpiIndicator {
   position: absolute;
   bottom: 20px;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  height: 120px;
-  line-height: 120px;
-  font-size: 40px;
-  background-color: #666;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0.5vw;
+  padding: 0.4vw 0.8vw;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.2);
+  font-size: 0.9vw;
   text-transform: uppercase;
 }
-#rpiStatus[data-rpi-online="true"] {
+.rpi-indicator .rpi-icon {
+  width: 0.8vw;
+  height: 0.8vw;
+  border-radius: 50%;
+  background-color: #666;
+}
+.rpi-indicator[data-online="true"] .rpi-icon {
   background-color: #0c6;
-  color: #000;
+}
+.rpi-indicator[data-state="E"] {
+  background-color: rgba(255, 0, 0, 0.9);
+}
+.rpi-indicator[data-state="A"] {
+  background-color: rgba(255, 170, 0, 0.9);
+}
+.rpi-indicator[data-state="OK"] {
+  background-color: rgba(15, 120, 15, 0.9);
 }
 #preMatch .databar#disabled {
   font-family: "FuturaLTBold";

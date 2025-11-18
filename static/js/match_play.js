@@ -168,18 +168,6 @@ const handleArenaStatus = function (data) {
     }
     $(`#status${station} .radio-status`).attr("data-status-ternary", radioStatus);
 
-    const rpiInfo = data.StationRpiStatuses ? data.StationRpiStatuses[station] : null;
-    const bypassElement = $("#status" + station + " .bypass-status");
-    if (rpiInfo) {
-      bypassElement.attr("data-rpi-online", rpiInfo.Online);
-      bypassElement.attr("data-rpi-e", rpiInfo.RemoteEStop);
-      bypassElement.attr("data-rpi-a", rpiInfo.RemoteAStop);
-    } else {
-      bypassElement.attr("data-rpi-online", "");
-      bypassElement.attr("data-rpi-e", "");
-      bypassElement.attr("data-rpi-a", "");
-    }
-
     if (stationStatus.EStop) {
       $("#status" + station + " .bypass-status").attr("data-status-ok", false);
       $("#status" + station + " .bypass-status").text("ES");
@@ -336,6 +324,33 @@ const handleRealtimeScore = function (data) {
   $("#blueScore").text(data.Blue.ScoreSummary.Score);
 };
 
+const rpiStationsOrder = ["R1","R2","R3","B1","B2","B3"];
+
+const updateRpiStatusTable = function(statuses) {
+  rpiStationsOrder.forEach(station => {
+    const row = document.querySelector(`#rpiStatusTable tr[data-station="${station}"]`);
+    if (!row) {
+      return;
+    }
+    const status = statuses[station];
+    row.querySelector(".rpi-online").textContent = status && status.Online ? "Online" : "Offline";
+    row.querySelector(".rpi-estop").textContent = status && status.RemoteEStop ? "Active" : "—";
+    row.querySelector(".rpi-astop").textContent = status && status.RemoteAStop ? "Active" : "—";
+    row.querySelector(".rpi-last").textContent = formatRpiTimestamp(status && status.LastUpdate);
+  });
+};
+
+const formatRpiTimestamp = function(timestamp) {
+  if (!timestamp) {
+    return "Never";
+  }
+  const parsed = new Date(timestamp);
+  if (isNaN(parsed)) {
+    return timestamp;
+  }
+  return parsed.toLocaleTimeString();
+};
+
 // Handles a websocket message to populate the final score data.
 const handleScorePosted = function (data) {
   let matchName = data.Match.LongName;
@@ -362,7 +377,9 @@ const handleScoringStatus = function (data) {
       scoreIsReady = false;
       break;
     }
-  }
+
+  updateRpiStatusTable(data.StationRpiStatuses || {});
+}
   $("#refereeScoreStatus").attr("data-ready", data.RefereeScoreReady);
   updateScoreStatus(data, "red_near", "#redNearScoreStatus", "Red Near");
   updateScoreStatus(data, "red_far", "#redFarScoreStatus", "Red Far");
