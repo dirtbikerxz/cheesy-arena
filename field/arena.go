@@ -1034,6 +1034,13 @@ func (arena *Arena) getAssignedAllianceStation(teamId int) string {
 // Updates the score given new input information from the field PLC, and actuates PLC outputs accordingly.
 func (arena *Arena) handlePlcInputOutput() {
 	if !arena.Plc.IsEnabled() {
+		// PLC is disabled; still apply remote-only stops so station RPis can control E-stops/A-stops.
+		arena.applyStationStops("R1", false, false)
+		arena.applyStationStops("R2", false, false)
+		arena.applyStationStops("R3", false, false)
+		arena.applyStationStops("B1", false, false)
+		arena.applyStationStops("B2", false, false)
+		arena.applyStationStops("B3", false, false)
 		return
 	}
 
