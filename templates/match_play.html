@@ -200,29 +200,6 @@ UI for controlling match play and viewing team connection and field status.
       <div id="cycleTimeMessage" class="col-lg-6"></div>
       <div id="earlyLateMessage" class="col-lg-4 text-end"></div>
     </div>
-  </div>
-</div>
-<div id="confirmCommitResults" class="modal" style="top: 20%;">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title">Confirm</h4>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <p id="confirmCommitReplay">This is a replay. Are you sure you want to overwrite the previous results?</p>
-        <p id="confirmCommitNotReady">Not all scoring sources are ready yet. Are you sure you want to
-          commit the results?</p>
-      </div>
-      <div class="modal-footer">
-        <form class="form-horizontal" action="/setup/teams/clear" method="POST">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-danger" onclick="commitResults();" data-bs-dismiss="modal">
-            Commit Results
-          </button>
-        </form>
-      </div>
-    </div>
     <div class="card card-body bg-body-tertiary mt-3" id="rpiStatusCard">
       <h5>Station RPi Status</h5>
       <div class="table-responsive">
@@ -248,6 +225,29 @@ UI for controlling match play and viewing team connection and field status.
             {{end}}
           </tbody>
         </table>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="confirmCommitResults" class="modal" style="top: 20%;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Confirm</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmCommitReplay">This is a replay. Are you sure you want to overwrite the previous results?</p>
+        <p id="confirmCommitNotReady">Not all scoring sources are ready yet. Are you sure you want to
+          commit the results?</p>
+      </div>
+      <div class="modal-footer">
+        <form class="form-horizontal" action="/setup/teams/clear" method="POST">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" onclick="commitResults();" data-bs-dismiss="modal">
+            Commit Results
+          </button>
+        </form>
       </div>
     </div>
   </div>
