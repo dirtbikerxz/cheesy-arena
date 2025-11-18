@@ -31,8 +31,8 @@ import urllib.request
 
 API_URL = {{printf "%q" .ApiUrl}}
 SECRET = {{printf "%q" .Secret}}
-ESTOP_PIN = 16
-ASTOP_PIN = 12
+ESTOP_PIN = 12
+ASTOP_PIN = 16
 POLL_INTERVAL = 0.05
 HEARTBEAT_INTERVAL = 0.5
 
@@ -52,7 +52,9 @@ GPIO.setup(ESTOP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(ASTOP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 def read_pressed(pin):
-    return GPIO.input(pin) == GPIO.LOW
+    # Buttons are normally closed and thus hold the pin low until pressed opens the circuit.
+    # The internal pull-up brings the line high when the button is pressed, so treat HIGH as “pressed”.
+    return GPIO.input(pin) == GPIO.HIGH
 
 def send_status(e_stop, a_stop):
     payload = {"eStop": e_stop, "aStop": a_stop}
