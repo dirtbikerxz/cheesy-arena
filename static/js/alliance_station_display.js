@@ -77,24 +77,29 @@ var handleMatchLoad = function (data) {
 var handleArenaStatus = function (data) {
   stationStatus = data.AllianceStations[station];
   const rpiStatusMap = data.StationRpiStatuses;
-  const rpiIndicator = $("#rpiIndicator");
   const stationRpi = rpiStatusMap ? rpiStatusMap[station] : null;
+  const rpiBadge = $("#rpiBadge");
+  const estopBadge = $("#estopBadge");
+  const astopBadge = $("#astopBadge");
   if (stationRpi) {
-    rpiIndicator.attr("data-online", stationRpi.Online ? "true" : "false");
+    rpiBadge
+      .removeClass("online offline")
+      .addClass(stationRpi.Online ? "online" : "offline")
+      .text("Stop Box");
     if (stationRpi.RemoteEStop) {
-      rpiIndicator.attr("data-state", "E");
-      rpiIndicator.find(".rpi-text").text("E-STOP");
-    } else if (stationRpi.RemoteAStop) {
-      rpiIndicator.attr("data-state", "A");
-      rpiIndicator.find(".rpi-text").text("A-STOP");
+      estopBadge.addClass("active").text("E-STOP");
     } else {
-      rpiIndicator.attr("data-state", "OK");
-      rpiIndicator.find(".rpi-text").text("RPi Ready");
+      estopBadge.removeClass("active").text("E-STOP");
+    }
+    if (stationRpi.RemoteAStop) {
+      astopBadge.addClass("active").text("A-STOP");
+    } else {
+      astopBadge.removeClass("active").text("A-STOP");
     }
   } else {
-    rpiIndicator.attr("data-online", "false");
-    rpiIndicator.attr("data-state", "OK");
-    rpiIndicator.find(".rpi-text").text("RPi N/A");
+    rpiBadge.removeClass("online").addClass("offline").text("Stop Box");
+    estopBadge.removeClass("active").text("E-STOP");
+    astopBadge.removeClass("active").text("A-STOP");
   }
   var blink = false;
   if (stationStatus && stationStatus.Bypass) {

@@ -17,12 +17,16 @@ Display shown on the screens above each driver station.
     <div id="match" class="mode">
       <div id="preMatch">
         <div id="teamNumber"></div>
-      <div id="teamName" class="databar">
-        <span id="teamNameText"></span> <sub id="teamRank"></sub>
-      </div>
-      <div id="disabled" class="databar">DISABLED</div>
-      <div id="rpiStatus" class="databar">RPi</div>
+        <div id="teamName" class="databar">
+          <span id="teamNameText"></span> <sub id="teamRank"></sub>
+        </div>
+        <div id="disabled" class="databar">DISABLED</div>
         <div id="playoffAllianceInfo"></div>
+        <div id="badgeRow">
+          <span id="rpiBadge" class="status-badge">RPi</span>
+          <span id="estopBadge" class="status-badge">E</span>
+          <span id="astopBadge" class="status-badge">A</span>
+        </div>
       </div>
       <div id="inMatch">
         <div id="redScore" class="datapoint"></div>
@@ -38,10 +42,6 @@ Display shown on the screens above each driver station.
     </div>
     <div id="signalCount" class="mode">
       <div>COUNT</div>
-    </div>
-    <div id="rpiIndicator" class="rpi-indicator">
-      <span class="rpi-icon"></span>
-      <span class="rpi-text">RPi</span>
     </div>
     <script src="/static/js/lib/jquery.min.js"></script>
     <script src="/static/js/lib/jquery.json-2.4.min.js"></script>

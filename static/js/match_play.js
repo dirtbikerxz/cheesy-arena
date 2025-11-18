@@ -283,6 +283,7 @@ const handleArenaStatus = function (data) {
   $.each(data.PlcArmorBlockStatuses, function (name, status) {
     $("#plc" + name + "Status").attr("data-ready", status);
   });
+  updateRpiStatusTable(data.StationRpiStatuses || {});
 };
 
 // Handles a websocket message to update the teams for the current match.
