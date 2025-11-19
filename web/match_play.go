@@ -325,30 +325,42 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				ws.WriteError(err.Error())
 				continue
 			}
-			if err := web.arena.CheckRemoteStopsCleared(); err != nil {
-				ws.WriteError(err.Error())
-				continue
+			if web.arena.AutomaticMatchAdvanceEnabled() {
+				if err := web.arena.CheckRemoteStopsCleared(); err != nil {
+					ws.WriteError(err.Error())
+					continue
+				}
+				err = web.arena.LoadNextMatch(true)
+				if err != nil {
+					ws.WriteError(err.Error())
+					continue
+				}
 			}
-			err = web.arena.LoadNextMatch(true)
-			if err != nil {
-				ws.WriteError(err.Error())
-				continue
-			}
+			web.arena.MatchLoadNotifier.Notify()
+			web.arena.RealtimeScoreNotifier.Notify()
+			web.arena.AllianceStationDisplayModeNotifier.Notify()
+			web.arena.ScoringStatusNotifier.Notify()
 		case "discardResults":
 			err = web.arena.ResetMatch()
 			if err != nil {
 				ws.WriteError(err.Error())
 				continue
 			}
-			if err := web.arena.CheckRemoteStopsCleared(); err != nil {
-				ws.WriteError(err.Error())
-				continue
+			if web.arena.AutomaticMatchAdvanceEnabled() {
+				if err := web.arena.CheckRemoteStopsCleared(); err != nil {
+					ws.WriteError(err.Error())
+					continue
+				}
+				err = web.arena.LoadNextMatch(false)
+				if err != nil {
+					ws.WriteError(err.Error())
+					continue
+				}
 			}
-			err = web.arena.LoadNextMatch(false)
-			if err != nil {
-				ws.WriteError(err.Error())
-				continue
-			}
+			web.arena.MatchLoadNotifier.Notify()
+			web.arena.RealtimeScoreNotifier.Notify()
+			web.arena.AllianceStationDisplayModeNotifier.Notify()
+			web.arena.ScoringStatusNotifier.Notify()
 		case "setAudienceDisplay":
 			mode, ok := data.(string)
 			if !ok {

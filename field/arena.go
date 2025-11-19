@@ -652,11 +652,13 @@ func (arena *Arena) Update() {
 				arena.AudienceDisplayMode = "blank"
 				arena.AudienceDisplayModeNotifier.Notify()
 			}()
-			go func() {
-				// Configure the network in advance for the next match after a delay.
-				time.Sleep(time.Second * preLoadNextMatchDelaySec)
-				arena.preLoadNextMatch()
-			}()
+			if arena.AutomaticMatchAdvanceEnabled() {
+				go func() {
+					// Configure the network in advance for the next match after a delay.
+					time.Sleep(time.Second * preLoadNextMatchDelaySec)
+					arena.preLoadNextMatch()
+				}()
+			}
 		}
 	case TimeoutActive:
 		if matchTimeSec >= float64(game.MatchTiming.TimeoutDurationSec) {
@@ -1232,6 +1234,14 @@ func (arena *Arena) UpdateRemoteStops(station string, eStop, aStop bool) error {
 		arena.ArenaStatusNotifier.Notify()
 	}
 	return nil
+}
+
+// Returns true if matches should be advanced automatically (preloaded or loaded on result commit).
+func (arena *Arena) AutomaticMatchAdvanceEnabled() bool {
+	if arena.EventSettings == nil {
+		return true
+	}
+	return !arena.EventSettings.ManualMatchAdvance
 }
 
 func (arena *Arena) StationRpiStatuses() map[string]StationRpiStatus {

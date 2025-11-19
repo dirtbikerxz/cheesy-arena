@@ -436,6 +436,19 @@ UI for configuring event settings.
                   <input type="text" class="form-control" name="blackmagicAddresses" value="{{.BlackmagicAddresses}}">
                 </div>
               </div>
+              <div class="row mb-3">
+                <label class="col-lg-8 control-label" for="manualMatchAdvance">
+                  Require Manual Match Advancement
+                </label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="manualMatchAdvance" name="manualMatchAdvance"
+                    {{if .ManualMatchAdvance}} checked{{end}}>
+                </div>
+              </div>
+              <p class="help-block">
+                When checked, the field will not preload or load the next match automatically – matches and teams only
+                change when you explicitly load them, load a test match, or substitute individual teams.
+              </p>
             </fieldset>
           </div>
           <div class="row justify-content-center">

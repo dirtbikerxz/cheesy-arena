@@ -268,6 +268,7 @@ func TestCommitCards(t *testing.T) {
 
 func TestMatchPlayWebsocketCommands(t *testing.T) {
 	web := setupTestWeb(t)
+	web.arena.EventSettings.ManualMatchAdvance = true
 	web.arena.Database.CreateTeam(&model.Team{Id: 254})
 
 	server, wsUrl := web.startTestServer()
@@ -336,13 +337,17 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	assert.Equal(t, field.PostMatch, web.arena.MatchState)
 	web.arena.RedRealtimeScore.CurrentScore.BargeAlgae = 6
 	web.arena.BlueRealtimeScore.CurrentScore.LeaveStatuses = [3]bool{true, false, true}
+	matchIdBeforeCommit := web.arena.CurrentMatch.Id
 	ws.Write("commitResults", nil)
 	readWebsocketMultiple(t, ws, 5) // scorePosted, matchLoad, realtimeScore, allianceStationDisplayMode, scoringStatus
 	assert.Equal(t, 6, web.arena.SavedMatchResult.RedScore.BargeAlgae)
 	assert.Equal(t, [3]bool{true, false, true}, web.arena.SavedMatchResult.BlueScore.LeaveStatuses)
+	assert.Equal(t, matchIdBeforeCommit, web.arena.CurrentMatch.Id)
 	assert.Equal(t, field.PreMatch, web.arena.MatchState)
+	matchIdBeforeDiscard := web.arena.CurrentMatch.Id
 	ws.Write("discardResults", nil)
 	readWebsocketMultiple(t, ws, 4) // matchLoad, realtimeScore, allianceStationDisplayMode, scoringStatus
+	assert.Equal(t, matchIdBeforeDiscard, web.arena.CurrentMatch.Id)
 	assert.Equal(t, field.PreMatch, web.arena.MatchState)
 
 	// Test changing the displays.

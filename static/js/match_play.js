@@ -58,12 +58,12 @@ const signalReset = function () {
   websocket.send("signalReset");
 };
 
-// Sends a websocket message to commit the match score and load the next match.
+// Sends a websocket message to commit the match score.
 const commitResults = function () {
   websocket.send("commitResults");
 };
 
-// Sends a websocket message to discard the match score and load the next match.
+// Sends a websocket message to discard the match score.
 const discardResults = function () {
   websocket.send("discardResults");
 };

@@ -58,6 +58,7 @@ type EventSettings struct {
 	ApChannel                       int
 	SwitchAddress                   string
 	SwitchPassword                  string
+	ManualMatchAdvance              bool
 	SCCManagementEnabled            bool
 	CoreSwitchManagementEnabled     bool
 	CoreSwitchAddress               string
