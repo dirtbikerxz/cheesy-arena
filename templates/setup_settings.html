@@ -286,7 +286,7 @@ UI for configuring event settings.
 
               <div class="row mb-3">
                 <label class="col-lg-8 control-label"
-                  for="coreSwitchManagementEnabled">Enable Core Switch Management</label>
+                  for="coreSwitchManagementEnabled">Core Switch Management</label>
                 <div class="col-lg-1 checkbox">
                   <input type="checkbox" id="coreSwitchManagementEnabled"
                     name="coreSwitchManagementEnabled" {{if .CoreSwitchManagementEnabled}} checked{{end}}>
@@ -307,7 +307,7 @@ UI for configuring event settings.
 
               <div class="row mb-3">
                 <label class="col-lg-8 control-label"
-                  for="redTeamSwitchManagementEnabled">Enable Red Team Switch Management</label>
+                  for="redTeamSwitchManagementEnabled">Red Team Switch Management</label>
                 <div class="col-lg-1 checkbox">
                   <input type="checkbox" id="redTeamSwitchManagementEnabled"
                     name="redTeamSwitchManagementEnabled" {{if .RedTeamSwitchManagementEnabled}} checked{{end}}>
@@ -328,7 +328,7 @@ UI for configuring event settings.
 
               <div class="row mb-3">
                 <label class="col-lg-8 control-label"
-                  for="redFMSSwitchManagementEnabled">Enable Red FMS Switch Management</label>
+                  for="redFMSSwitchManagementEnabled">Red FMS Switch Management</label>
                 <div class="col-lg-1 checkbox">
                   <input type="checkbox" id="redFMSSwitchManagementEnabled"
                     name="redFMSSwitchManagementEnabled" {{if .RedFMSSwitchManagementEnabled}} checked{{end}}>
@@ -349,7 +349,7 @@ UI for configuring event settings.
 
               <div class="row mb-3">
                 <label class="col-lg-8 control-label"
-                  for="blueTeamSwitchManagementEnabled">Enable Blue Team Switch Management</label>
+                  for="blueTeamSwitchManagementEnabled">Blue Team Switch Management</label>
                 <div class="col-lg-1 checkbox">
                   <input type="checkbox" id="blueTeamSwitchManagementEnabled"
                     name="blueTeamSwitchManagementEnabled" {{if .BlueTeamSwitchManagementEnabled}} checked{{end}}>
@@ -370,7 +370,7 @@ UI for configuring event settings.
 
               <div class="row mb-3">
                 <label class="col-lg-8 control-label"
-                  for="blueFMSSwitchManagementEnabled">Enable Blue FMS Switch Management</label>
+                  for="blueFMSSwitchManagementEnabled">Blue FMS Switch Management</label>
                 <div class="col-lg-1 checkbox">
                   <input type="checkbox" id="blueFMSSwitchManagementEnabled"
                     name="blueFMSSwitchManagementEnabled" {{if .BlueFMSSwitchManagementEnabled}} checked{{end}}>
@@ -388,8 +388,40 @@ UI for configuring event settings.
                   <input type="text" class="form-control" name="blueFMSSwitchPassword" value="{{.BlueFMSSwitchPassword}}" placeholder="password">
                 </div>
               </div>
-
             </fieldset>
+            <fieldset class="mb-4">
+              <div class="row mb-3">
+                <legend>Station Stop Boxes</legend>
+                <p>Enable this to process physical E-Stop and A-Stop button reports from the station Stop Boxes.</p>
+                <label class="col-lg-8 control-label" for="useStationRpiStops">Enable Station Stop Boxes</label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="useStationRpiStops" name="useStationRpiStops"
+                    {{if .UseStationRpiStops}} checked{{end}}>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Station Stop Box Secret</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="stationRpiSecret"
+                    value="{{.StationRpiSecret}}" placeholder="Optional shared secret">
+                  <p class="help-block">If set, the Stop Boxess must include this token when calling the stop API.</p>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <legend>Scrimmage Match Mode</legend>
+                <p>When checked, the field will not load the next match automatically – matches only
+                change when you explicitly load them, and robots / driverstations remain connected otherwise.</p>
+                <p>
+                  Enable this when running manual practice or unstructured scrimmages to prevent automatic match loading.
+                </p>
+                <label class="col-lg-8 control-label" for="manualMatchAdvance">
+                  Enable Scrimmage Match Mode
+                </label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="manualMatchAdvance" name="manualMatchAdvance"
+                    {{if .ManualMatchAdvance}} checked{{end}}>
+                </div>
+              </div>
               <div class="row mb-3">
                 <legend>Driver Station Lite Mode</legend>
                 <p>When enabled, the Driver Station software will prompt teams to allow Cheesy Arena to connect rather
@@ -399,23 +431,6 @@ UI for configuring event settings.
                 <div class="col-lg-1 checkbox">
                   <input type="checkbox" id="useLiteUdpPort" name="useLiteUdpPort"
                     {{if .UseLiteUdpPort}} checked{{end}}>
-                </div>
-              </div>
-              <div class="row mb-3">
-                <legend>Station RPi Stop Buttons</legend>
-                <p>Enable this to process physical E-Stop and A-Stop button reports from the station RPis.</p>
-                <label class="col-lg-8 control-label" for="useStationRpiStops">Enable Station RPi Stops</label>
-                <div class="col-lg-1 checkbox">
-                  <input type="checkbox" id="useStationRpiStops" name="useStationRpiStops"
-                    {{if .UseStationRpiStops}} checked{{end}}>
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Station RPi Secret</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" name="stationRpiSecret"
-                    value="{{.StationRpiSecret}}" placeholder="Optional shared secret">
-                  <p class="help-block">If set, the RPis must include this token when calling the stop API.</p>
                 </div>
               </div>
             </fieldset>
@@ -436,19 +451,6 @@ UI for configuring event settings.
                   <input type="text" class="form-control" name="blackmagicAddresses" value="{{.BlackmagicAddresses}}">
                 </div>
               </div>
-              <div class="row mb-3">
-                <label class="col-lg-8 control-label" for="manualMatchAdvance">
-                  Require Manual Match Advancement
-                </label>
-                <div class="col-lg-1 checkbox">
-                  <input type="checkbox" id="manualMatchAdvance" name="manualMatchAdvance"
-                    {{if .ManualMatchAdvance}} checked{{end}}>
-                </div>
-              </div>
-              <p class="help-block">
-                When checked, the field will not preload or load the next match automatically – matches and teams only
-                change when you explicitly load them, load a test match, or substitute individual teams.
-              </p>
             </fieldset>
           </div>
           <div class="row justify-content-center">
