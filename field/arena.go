@@ -1008,6 +1008,22 @@ func (arena *Arena) checkAllianceStationsReady(stations ...string) error {
 	return nil
 }
 
+func (arena *Arena) CheckRemoteStopsCleared() error {
+	if arena.EventSettings == nil || !arena.EventSettings.UseStationRpiStops {
+		return nil
+	}
+	var active []string
+	for name, station := range arena.AllianceStations {
+		if station.RemoteEStop || station.RemoteAStop {
+			active = append(active, name)
+		}
+	}
+	if len(active) == 0 {
+		return nil
+	}
+	return fmt.Errorf("cannot load match while station RPi stops active at %s", strings.Join(active, ", "))
+}
+
 func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 	for _, allianceStation := range arena.AllianceStations {
 		dsConn := allianceStation.DsConn

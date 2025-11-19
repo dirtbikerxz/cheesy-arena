@@ -162,6 +162,10 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				ws.WriteError(err.Error())
 				continue
 			}
+			if err := web.arena.CheckRemoteStopsCleared(); err != nil {
+				ws.WriteError(err.Error())
+				continue
+			}
 			err = web.arena.ResetMatch()
 			if err != nil {
 				ws.WriteError(err.Error())
@@ -245,6 +249,10 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				ws.WriteError(err.Error())
 				continue
 			}
+			if err := web.arena.CheckRemoteStopsCleared(); err != nil {
+				ws.WriteError(err.Error())
+				continue
+			}
 			err = web.arena.SubstituteTeams(args.Red1, args.Red2, args.Red3, args.Blue1, args.Blue2, args.Blue3)
 			if err != nil {
 				ws.WriteError(err.Error())
@@ -317,6 +325,10 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				ws.WriteError(err.Error())
 				continue
 			}
+			if err := web.arena.CheckRemoteStopsCleared(); err != nil {
+				ws.WriteError(err.Error())
+				continue
+			}
 			err = web.arena.LoadNextMatch(true)
 			if err != nil {
 				ws.WriteError(err.Error())
@@ -325,6 +337,10 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 		case "discardResults":
 			err = web.arena.ResetMatch()
 			if err != nil {
+				ws.WriteError(err.Error())
+				continue
+			}
+			if err := web.arena.CheckRemoteStopsCleared(); err != nil {
 				ws.WriteError(err.Error())
 				continue
 			}

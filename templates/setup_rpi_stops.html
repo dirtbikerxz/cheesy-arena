@@ -144,9 +144,17 @@
         `;
         tbody.appendChild(row);
       }
-      row.querySelector('.station-online').textContent = status.Online ? 'Online' : 'Offline';
-      row.querySelector('.station-estop').textContent = status.RemoteEStop ? 'Active' : '—';
-      row.querySelector('.station-astop').textContent = status.RemoteAStop ? 'Active' : '—';
+      const onlineCell = row.querySelector('.station-online');
+      const eCell = row.querySelector('.station-estop');
+      const aCell = row.querySelector('.station-astop');
+
+      onlineCell.textContent = status.Online ? 'Online' : 'Offline';
+      onlineCell.setAttribute('data-online', status.Online ? 'true' : 'false');
+      eCell.textContent = status.RemoteEStop ? 'Active' : '—';
+      eCell.setAttribute('data-active', status.RemoteEStop ? 'true' : 'false');
+      aCell.textContent = status.RemoteAStop ? 'Active' : '—';
+      aCell.setAttribute('data-active', status.RemoteAStop ? 'true' : 'false');
+      row.setAttribute('data-stop-active', (status.RemoteEStop || status.RemoteAStop) ? 'true' : 'false');
     });
   }
   poll();

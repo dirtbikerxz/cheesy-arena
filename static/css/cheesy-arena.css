@@ -93,6 +93,21 @@
   line-height: 36px;
   font-size: 16px;
 }
+.alert-match-play {
+  margin-top: 10px;
+}
+#rpiStatusTable tr[data-stop-active="true"] {
+  background-color: #532b2b;
+  color: #fff;
+}
+#rpiStatusTable td[data-active="true"] {
+  color: #ffebeb;
+  font-weight: 700;
+}
+#rpiStatusTable td.rpi-online[data-online="false"] {
+  color: #ff5f5f;
+  font-weight: 700;
+}
 .btn-match-play-narrow {
   width: 139px;
 }

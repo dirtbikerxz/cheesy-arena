@@ -44,8 +44,9 @@ UI for controlling match play and viewing team connection and field status.
         {{template "matchPlayTeam" dict "color" "R" "position" 2}}
         {{template "matchPlayTeam" dict "color" "R" "position" 1}}
         <div id="playoffRedAllianceInfo"></div>
-      </div>
-    </div>
+	  </div>
+    <div id="matchPlayError" class="alert alert-danger alert-match-play" role="alert"></div>
+	</div>
     <div class="row justify-content-center mt-1">
       <button type="button" id="showOverlay" class="btn btn-info btn-match-play ms-1"
         onclick="showOverlay();" disabled>
@@ -200,6 +201,7 @@ UI for controlling match play and viewing team connection and field status.
       <div id="cycleTimeMessage" class="col-lg-6"></div>
       <div id="earlyLateMessage" class="col-lg-4 text-end"></div>
     </div>
+    <div id="matchPlayError" class="alert alert-danger alert-match-play d-none" role="alert"></div>
     <div class="card card-body bg-body-tertiary mt-3" id="rpiStatusCard">
       <h5>Station Stop Boxes Status</h5>
       <div class="table-responsive">
@@ -223,10 +225,10 @@ UI for controlling match play and viewing team connection and field status.
             {{end}}
           </tbody>
         </table>
-      </div>
-    </div>
-  </div>
-</div>
+	      </div>
+	    </div>
+	  </div>
+	</div>
 <div id="confirmCommitResults" class="modal" style="top: 20%;">
   <div class="modal-dialog">
     <div class="modal-content">

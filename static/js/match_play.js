@@ -124,9 +124,28 @@ const getTeamNumber = function (station) {
   return teamId ? parseInt(teamId) : 0;
 }
 
+const showMatchPlayError = function(msg) {
+  const err = $("#matchPlayError");
+  if (!err.length) {
+    return;
+  }
+  err.text(msg).removeClass("d-none");
+};
+
+const hideMatchPlayError = function() {
+  const err = $("#matchPlayError");
+  if (!err.length) {
+    return;
+  }
+  err.addClass("d-none").text("");
+};
+
+let remoteStopStations = [];
+
 // Handles a websocket message to update the team connection status.
 const handleArenaStatus = function (data) {
   // Update the team status view.
+  remoteStopStations = [];
   $.each(data.AllianceStations, function (station, stationStatus) {
     const wifiStatus = stationStatus.WifiStatus;
     $("#status" + station + " .radio-status").text(wifiStatus.TeamId);
@@ -168,6 +187,10 @@ const handleArenaStatus = function (data) {
     }
     $(`#status${station} .radio-status`).attr("data-status-ternary", radioStatus);
 
+    const rpiStatus = data.StationRpiStatuses ? data.StationRpiStatuses[station] : null;
+    if (rpiStatus && (rpiStatus.RemoteEStop || rpiStatus.RemoteAStop)) {
+      remoteStopStations.push(station);
+    }
     if (stationStatus.EStop) {
       $("#status" + station + " .bypass-status").attr("data-status-ok", false);
       $("#status" + station + " .bypass-status").text("ES");
@@ -289,6 +312,7 @@ const handleArenaStatus = function (data) {
 // Handles a websocket message to update the teams for the current match.
 const handleMatchLoad = function (data) {
   isReplay = data.IsReplay;
+  hideMatchPlayError();
 
   fetch("/match_play/match_load")
     .then(response => response.text())
@@ -334,9 +358,21 @@ const updateRpiStatusTable = function(statuses) {
       return;
     }
     const status = statuses[station];
-    row.querySelector(".rpi-online").textContent = status && status.Online ? "Online" : "Offline";
-    row.querySelector(".rpi-estop").textContent = status && status.RemoteEStop ? "Active" : "—";
-    row.querySelector(".rpi-astop").textContent = status && status.RemoteAStop ? "Active" : "—";
+    const online = status && status.Online;
+    const eActive = status && status.RemoteEStop;
+    const aActive = status && status.RemoteAStop;
+
+    const onlineCell = row.querySelector(".rpi-online");
+    const eCell = row.querySelector(".rpi-estop");
+    const aCell = row.querySelector(".rpi-astop");
+
+    onlineCell.textContent = online ? "Online" : "Offline";
+    onlineCell.setAttribute("data-online", online ? "true" : "false");
+    eCell.textContent = eActive ? "Active" : "—";
+    eCell.setAttribute("data-active", eActive ? "true" : "false");
+    aCell.textContent = aActive ? "Active" : "—";
+    aCell.setAttribute("data-active", aActive ? "true" : "false");
+    row.setAttribute("data-stop-active", (eActive || aActive) ? "true" : "false");
   });
 };
 
@@ -416,6 +452,14 @@ $(function () {
   const tooltipTriggerList = document.querySelectorAll("[data-bs-toggle=tooltip]");
   const tooltipList = [...tooltipTriggerList].map(element => new bootstrap.Tooltip(element));
 
+  $(".team-number").on("input", function () {
+    if (remoteStopStations.length > 0) {
+      const stations = remoteStopStations.join(", ");
+      const msg = `Cannot substitute teams while stop buttons are active at: ${stations}`;
+      showMatchPlayError(msg);
+    }
+  });
+
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/match_play/websocket", {
     allianceStationDisplayMode: function (event) {
@@ -448,5 +492,8 @@ $(function () {
     scoringStatus: function (event) {
       handleScoringStatus(event.data);
     },
+    error: function (event) {
+      showMatchPlayError(event.data);
+    }
   });
 });
