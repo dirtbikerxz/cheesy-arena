@@ -145,20 +145,24 @@ const handleArenaStatus = function (data) {
     }
 
     const rpiStatus = data.StationRpiStatuses ? data.StationRpiStatuses[station] : null;
-    const rpiElement = $(`#status${station} .rpi-status`);
+    const rpiElement = $(teamElementPrefix + "Rpi");
 
     if (rpiStatus) {
       rpiElement.attr("data-rpi-online", rpiStatus.Online ? "true" : "false");
+      rpiElement.attr("data-rpi-stop", "");
       if (rpiStatus.RemoteEStop) {
         rpiElement.text("E-STOP");
+        rpiElement.attr("data-rpi-stop", "estop");
       } else if (rpiStatus.RemoteAStop) {
         rpiElement.text("A-STOP");
+        rpiElement.attr("data-rpi-stop", "astop");
       } else {
-        rpiElement.text("RPi Ready");
+        rpiElement.text("Stop Box");
       }
     } else {
       rpiElement.attr("data-rpi-online", "false");
-      rpiElement.text("RPi N/A");
+      rpiElement.attr("data-rpi-stop", "");
+      rpiElement.text("Stop Box N/A");
     }
 
     if (stationStatus.EStop) {

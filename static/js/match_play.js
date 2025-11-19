@@ -191,18 +191,19 @@ const handleArenaStatus = function (data) {
     if (rpiStatus && (rpiStatus.RemoteEStop || rpiStatus.RemoteAStop)) {
       remoteStopStations.push(station);
     }
-    if (stationStatus.EStop) {
-      $("#status" + station + " .bypass-status").attr("data-status-ok", false);
-      $("#status" + station + " .bypass-status").text("ES");
+    const bypassElement = $("#status" + station + " .bypass-status");
+    if (stationStatus.Bypass) {
+      bypassElement.attr("data-status-ok", false);
+      bypassElement.text("B");
+    } else if (stationStatus.EStop) {
+      bypassElement.attr("data-status-ok", false);
+      bypassElement.text("ES");
     } else if (stationStatus.AStop) {
-      $("#status" + station + " .bypass-status").attr("data-status-ok", true);
-      $("#status" + station + " .bypass-status").text("AS");
-    } else if (stationStatus.Bypass) {
-      $("#status" + station + " .bypass-status").attr("data-status-ok", false);
-      $("#status" + station + " .bypass-status").text("B");
+      bypassElement.attr("data-status-ok", true);
+      bypassElement.text("AS");
     } else {
-      $("#status" + station + " .bypass-status").attr("data-status-ok", true);
-      $("#status" + station + " .bypass-status").text("");
+      bypassElement.attr("data-status-ok", true);
+      bypassElement.text("");
     }
   });
 
@@ -455,7 +456,7 @@ $(function () {
   $(".team-number").on("input", function () {
     if (remoteStopStations.length > 0) {
       const stations = remoteStopStations.join(", ");
-      const msg = `Cannot substitute teams while stop buttons are active at: ${stations}`;
+      const msg = `cannot substitute teams while station stop buttons are active at: ${stations}`;
       showMatchPlayError(msg);
     }
   });

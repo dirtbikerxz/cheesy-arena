@@ -114,16 +114,16 @@ type Arena struct {
 }
 
 type AllianceStation struct {
-	DsConn     *DriverStationConnection
-	Ethernet   bool
-	AStop      bool
-	EStop      bool
-	Bypass     bool
-	Team       *model.Team
-	WifiStatus network.TeamWifiStatus
-	aStopReset bool
-	RemoteEStop bool
-	RemoteAStop bool
+	DsConn           *DriverStationConnection
+	Ethernet         bool
+	AStop            bool
+	EStop            bool
+	Bypass           bool
+	Team             *model.Team
+	WifiStatus       network.TeamWifiStatus
+	aStopReset       bool
+	RemoteEStop      bool
+	RemoteAStop      bool
 	RemoteLastUpdate time.Time
 }
 
@@ -272,7 +272,7 @@ func (arena *Arena) UpdatePlayoffTournament() error {
 // Sets up the arena for the given match.
 func (arena *Arena) LoadMatch(match *model.Match) error {
 	if arena.MatchState != PreMatch && arena.MatchState != TimeoutActive {
-		return fmt.Errorf("cannot load match while there is a match still in progress or with results pending")
+		return fmt.Errorf("Cannot load match while there is a match still in progress or with results pending")
 	}
 
 	arena.CurrentMatch = match
@@ -1023,7 +1023,7 @@ func (arena *Arena) CheckRemoteStopsCleared() error {
 	if len(active) == 0 {
 		return nil
 	}
-	return fmt.Errorf("cannot load match while station RPi stops active at %s", strings.Join(active, ", "))
+	return fmt.Errorf("cannot load a new match while station stop buttons are depressed at %s", strings.Join(active, ", "))
 }
 
 func (arena *Arena) sendDsPacket(auto bool, enabled bool) {

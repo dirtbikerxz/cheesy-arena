@@ -70,11 +70,6 @@
 .bypass-status {
   cursor: pointer;
 }
-  position: relative;
-}
-  margin-top: 4px;
-  font-size: 11px;
-}
 [data-status-ok="true"], [data-status-ternary="2"] {
   background-color: #0e8;
 }
@@ -118,20 +113,24 @@
 .card#rpiStatusCard th, .card#rpiStatusCard td {
   padding: 0.2rem 0.4rem;
 }
-  position: relative;
+.rpi-status {
+  background-color: #777;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  text-align: center;
 }
-  content: "";
-  display: block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  position: absolute;
-  right: 4px;
-  top: 8px;
-}
+.rpi-status[data-rpi-online="true"] {
   background-color: #0c6;
+  color: #000;
 }
-  background-color: #666;
+.rpi-status[data-rpi-online="true"][data-rpi-stop="astop"] {
+  background-color: #fc3;
+}
+.rpi-status[data-rpi-online="true"][data-rpi-stop="estop"] {
+  background-color: #e66;
 }
 .badge-scoring {
   background-color: #e66;
