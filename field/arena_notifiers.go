@@ -104,6 +104,7 @@ func (arena *Arena) generateArenaStatusMessage() any {
 		FieldEStop            bool
 		PlcArmorBlockStatuses map[string]bool
 		StationRpiStatuses    map[string]StationRpiStatus
+		NetworkConfiguring    bool
 	}{
 		arena.CurrentMatch.Id,
 		arena.AllianceStations,
@@ -122,6 +123,7 @@ func (arena *Arena) generateArenaStatusMessage() any {
 		arena.Plc.GetFieldEStop(),
 		arena.Plc.GetArmorBlockStatuses(),
 		arena.StationRpiStatuses(),
+		arena.NetworkConfiguring,
 	}
 }
 

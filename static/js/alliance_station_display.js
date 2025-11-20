@@ -81,6 +81,10 @@ var handleArenaStatus = function (data) {
   const rpiBadge = $("#rpiBadge");
   const estopBadge = $("#estopBadge");
   const astopBadge = $("#astopBadge");
+  const dsBadge = $("#dsBadge");
+  const radioBadge = $("#radioBadge");
+  const robotBadge = $("#robotBadge");
+  const networkMessage = $("#networkMessage");
   if (stationRpi) {
     rpiBadge
       .removeClass("online offline")
@@ -101,6 +105,29 @@ var handleArenaStatus = function (data) {
     estopBadge.removeClass("active").text("E-STOP");
     astopBadge.removeClass("active").text("A-STOP");
   }
+
+  // Connection badges (left side).
+  let dsOk = "";
+  let radioOk = "";
+  let robotOk = "";
+  if (stationStatus && stationStatus.DsConn) {
+    const dsConn = stationStatus.DsConn;
+    dsOk = dsConn.DsLinked ? "true" : "false";
+    const expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
+    const wifiStatus = stationStatus.WifiStatus;
+    if (expectedTeamId === wifiStatus.TeamId && (wifiStatus.RadioLinked || dsConn.RobotLinked)) {
+      radioOk = "true";
+    } else if (wifiStatus.TeamId !== expectedTeamId && wifiStatus.TeamId !== 0) {
+      radioOk = "warn";
+    } else {
+      radioOk = "false";
+    }
+    robotOk = dsConn.RobotLinked ? "true" : "false";
+  }
+  dsBadge.attr("data-ok", dsOk || "false");
+  radioBadge.attr("data-ok", radioOk || "false");
+  robotBadge.attr("data-ok", robotOk || "false");
+
   var blink = false;
   if (stationStatus && stationStatus.Bypass) {
     $("#match").attr("data-status", "bypass");
@@ -123,6 +150,24 @@ var handleArenaStatus = function (data) {
   if (!blink && blinkInterval) {
     clearInterval(blinkInterval);
     blinkInterval = null;
+  }
+
+  // Show network configuring message if AP/switches are not ready.
+  const statuses = [
+    data.AccessPointStatus,
+    data.CoreSwitchStatus,
+    data.RedTeamSwitchStatus,
+    data.RedFMSSwitchStatus,
+    data.BlueTeamSwitchStatus,
+    data.BlueFMSSwitchStatus,
+  ];
+  const configuring = data.NetworkConfiguring || statuses.some(
+    status => typeof status === "string" && status.toUpperCase() === "CONFIGURING",
+  );
+  if (configuring) {
+    networkMessage.text("Field configuring network… comms may drop briefly.").removeClass("d-none");
+  } else {
+    networkMessage.addClass("d-none").text("");
   }
 };
 

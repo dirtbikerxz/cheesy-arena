@@ -178,9 +178,31 @@ body[data-position=right] #inMatch #blueScore {
 #badgeRow {
   position: absolute;
   bottom: 10px;
+  left: 10px;
   right: 10px;
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 0.5vw;
+}
+.badge-group {
+  display: flex;
+  gap: 0.5vw;
+}
+.left-badges .status-badge {
+  min-width: 90px;
+  justify-content: center;
+}
+.status-message {
+  padding: 0.4vw 0.8vw;
+  border-radius: 12px;
+  background-color: #222;
+  color: #ff0;
+  font-size: 0.9vw;
+  text-align: center;
+}
+.status-message.d-none {
+  display: none;
 }
 .status-badge {
   padding: 0.3vw 0.8vw;
@@ -201,6 +223,15 @@ body[data-position=right] #inMatch #blueScore {
 .status-badge.active {
   background-color: #e33;
   animation: pulse 1s linear infinite;
+}
+.conn-badge[data-ok="true"] {
+  background-color: #0c6;
+}
+.conn-badge[data-ok="false"] {
+  background-color: #e33;
+}
+.conn-badge[data-ok="warn"] {
+  background-color: #fc3;
 }
 .status-badge.blink {
   animation-name: blink;

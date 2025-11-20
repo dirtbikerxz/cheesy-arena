@@ -111,6 +111,7 @@ type Arena struct {
 	breakDescription                  string
 	preloadedTeams                    *[6]*model.Team
 	pendingSwitchRebootCancel         context.CancelFunc
+	NetworkConfiguring                bool
 }
 
 type AllianceStation struct {
@@ -897,8 +898,11 @@ func (arena *Arena) setupNetwork(teams [6]*model.Team, isPreload bool) {
 	}
 
 	// Trigger AP reconfiguration first.
+	arena.NetworkConfiguring = true
 	if err := arena.accessPoint.ConfigureTeamWifi(teams); err != nil {
 		log.Printf("Failed to configure team WiFi: %s", err.Error())
+		arena.NetworkConfiguring = false
+		return
 	} else {
 		log.Printf("Waiting for access point to finish CONFIGURING before rebooting team switches…")
 	}
@@ -937,6 +941,7 @@ func (arena *Arena) setupNetwork(teams [6]*model.Team, isPreload bool) {
 
 			case <-deadline.C:
 				log.Printf("Access point did not return to ACTIVE within %s; skipping team switch reboot.", waitTimeout)
+				arena.NetworkConfiguring = false
 				return
 
 			case <-ticker.C:
@@ -956,7 +961,36 @@ func (arena *Arena) setupNetwork(teams [6]*model.Team, isPreload bool) {
 						log.Printf("Rebooting BLUE team switch…")
 						go arena.blueTeamSwitch.Reboot()
 					}
-					return
+					if !arena.EventSettings.RedTeamSwitchManagementEnabled &&
+						!arena.EventSettings.BlueTeamSwitchManagementEnabled {
+						arena.NetworkConfiguring = false
+						return
+					}
+
+					switchDeadline := time.NewTimer(waitTimeout)
+					switchTicker := time.NewTicker(pollEvery)
+					defer switchDeadline.Stop()
+					defer switchTicker.Stop()
+					for {
+						select {
+						case <-ctx.Done():
+							arena.NetworkConfiguring = false
+							return
+						case <-switchDeadline.C:
+							log.Printf("Team switches did not return to ACTIVE within %s; continuing anyway.", waitTimeout)
+							arena.NetworkConfiguring = false
+							return
+						case <-switchTicker.C:
+							redOK := !arena.EventSettings.RedTeamSwitchManagementEnabled ||
+								strings.EqualFold(arena.redTeamSwitch.Status, "ACTIVE")
+							blueOK := !arena.EventSettings.BlueTeamSwitchManagementEnabled ||
+								strings.EqualFold(arena.blueTeamSwitch.Status, "ACTIVE")
+							if redOK && blueOK {
+								arena.NetworkConfiguring = false
+								return
+							}
+						}
+					}
 				}
 			}
 		}
