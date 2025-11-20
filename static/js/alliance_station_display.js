@@ -76,8 +76,18 @@ var handleMatchLoad = function (data) {
 // Handles a websocket message to update the team connection status.
 var handleArenaStatus = function (data) {
   stationStatus = data.AllianceStations[station];
+  const isNeutral = station && station[0] === "N";
   const rpiStatusMap = data.StationRpiStatuses;
   const stationRpi = rpiStatusMap ? rpiStatusMap[station] : null;
+  const leftGroup = $(".left-badges");
+  const rightGroup = $(".right-badges");
+  if (isNeutral) {
+    leftGroup.addClass("d-none");
+    rightGroup.addClass("d-none");
+  } else {
+    leftGroup.removeClass("d-none");
+    rightGroup.removeClass("d-none");
+  }
   const rpiBadge = $("#rpiBadge");
   const estopBadge = $("#estopBadge");
   const astopBadge = $("#astopBadge");
@@ -85,71 +95,80 @@ var handleArenaStatus = function (data) {
   const radioBadge = $("#radioBadge");
   const robotBadge = $("#robotBadge");
   const networkMessage = $("#networkMessage");
-  if (stationRpi) {
-    rpiBadge
-      .removeClass("online offline")
-      .addClass(stationRpi.Online ? "online" : "offline")
-      .text("Stop Box");
-    if (stationRpi.RemoteEStop) {
-      estopBadge.addClass("active").text("E-STOP");
-    } else {
-      estopBadge.removeClass("active").text("E-STOP");
-    }
-    if (stationRpi.RemoteAStop) {
-      astopBadge.addClass("active").text("A-STOP");
-    } else {
-      astopBadge.removeClass("active").text("A-STOP");
-    }
-  } else {
-    rpiBadge.removeClass("online").addClass("offline").text("Stop Box");
-    estopBadge.removeClass("active").text("E-STOP");
-    astopBadge.removeClass("active").text("A-STOP");
-  }
-
-  // Connection badges (left side).
-  let dsOk = "";
-  let radioOk = "";
-  let robotOk = "";
-  if (stationStatus && stationStatus.DsConn) {
-    const dsConn = stationStatus.DsConn;
-    dsOk = dsConn.DsLinked ? "true" : "false";
-    const expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
-    const wifiStatus = stationStatus.WifiStatus;
-    if (expectedTeamId === wifiStatus.TeamId && (wifiStatus.RadioLinked || dsConn.RobotLinked)) {
-      radioOk = "true";
-    } else if (wifiStatus.TeamId !== expectedTeamId && wifiStatus.TeamId !== 0) {
-      radioOk = "warn";
-    } else {
-      radioOk = "false";
-    }
-    robotOk = dsConn.RobotLinked ? "true" : "false";
-  }
-  dsBadge.attr("data-ok", dsOk || "false");
-  radioBadge.attr("data-ok", radioOk || "false");
-  robotBadge.attr("data-ok", robotOk || "false");
-
-  var blink = false;
-  if (stationStatus && stationStatus.Bypass) {
-    $("#match").attr("data-status", "bypass");
-  } else if (stationStatus) {
-    if (!stationStatus.DsConn || !stationStatus.DsConn.DsLinked) {
-      $("#match").attr("data-status", station[0]);
-    } else if (!stationStatus.DsConn.RobotLinked) {
-      blink = true;
-      if (!blinkInterval) {
-        blinkInterval = setInterval(function () {
-          var status = $("#match").attr("data-status");
-          $("#match").attr("data-status", (status === "") ? station[0] : "");
-        }, 250);
+  if (!isNeutral) {
+    if (stationRpi) {
+      rpiBadge
+        .removeClass("online offline")
+        .addClass(stationRpi.Online ? "online" : "offline")
+        .text("Stop Box");
+      if (stationRpi.RemoteEStop) {
+        estopBadge.addClass("active").text("E-STOP");
+      } else {
+        estopBadge.removeClass("active").text("E-STOP");
+      }
+      if (stationRpi.RemoteAStop) {
+        astopBadge.addClass("active").text("A-STOP");
+      } else {
+        astopBadge.removeClass("active").text("A-STOP");
       }
     } else {
-      $("#match").attr("data-status", "");
+      rpiBadge.removeClass("online").addClass("offline").text("Stop Box");
+      estopBadge.removeClass("active").text("E-STOP");
+      astopBadge.removeClass("active").text("A-STOP");
     }
-  }
 
-  if (!blink && blinkInterval) {
-    clearInterval(blinkInterval);
-    blinkInterval = null;
+    // Connection badges (left side).
+    let dsOk = "";
+    let radioOk = "";
+    let robotOk = "";
+    if (stationStatus && stationStatus.DsConn) {
+      const dsConn = stationStatus.DsConn;
+      dsOk = dsConn.DsLinked ? "true" : "false";
+      const expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
+      const wifiStatus = stationStatus.WifiStatus;
+      if (expectedTeamId === wifiStatus.TeamId && (wifiStatus.RadioLinked || dsConn.RobotLinked)) {
+        radioOk = "true";
+      } else if (wifiStatus.TeamId !== expectedTeamId && wifiStatus.TeamId !== 0) {
+        radioOk = "warn";
+      } else {
+        radioOk = "false";
+      }
+      robotOk = dsConn.RobotLinked ? "true" : "false";
+    }
+    dsBadge.attr("data-ok", dsOk || "false");
+    radioBadge.attr("data-ok", radioOk || "false");
+    robotBadge.attr("data-ok", robotOk || "false");
+
+    var blink = false;
+    if (stationStatus && stationStatus.Bypass) {
+      $("#match").attr("data-status", "bypass");
+    } else if (stationStatus) {
+      if (!stationStatus.DsConn || !stationStatus.DsConn.DsLinked) {
+        $("#match").attr("data-status", station[0]);
+      } else if (!stationStatus.DsConn.RobotLinked) {
+        blink = true;
+        if (!blinkInterval) {
+          blinkInterval = setInterval(function () {
+            var status = $("#match").attr("data-status");
+            $("#match").attr("data-status", (status === "") ? station[0] : "");
+          }, 250);
+        }
+      } else {
+        $("#match").attr("data-status", "");
+      }
+    }
+
+    if (!blink && blinkInterval) {
+      clearInterval(blinkInterval);
+      blinkInterval = null;
+    }
+  } else {
+    // Neutral displays don't show station-specific badges; ensure status/blink is cleared.
+    $("#match").attr("data-status", "");
+    if (blinkInterval) {
+      clearInterval(blinkInterval);
+      blinkInterval = null;
+    }
   }
 
   // Show network configuring message if AP/switches are not ready.
