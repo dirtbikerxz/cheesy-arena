@@ -92,6 +92,11 @@ const setAllianceStationDisplay = function () {
   websocket.send("setAllianceStationDisplay", $("input[name=allianceStationDisplay]:checked").val());
 };
 
+// Sends a websocket message to reboot a managed switch.
+const rebootSwitch = function (which) {
+  websocket.send("rebootSwitch", which);
+};
+
 // Sends a websocket message to start the timeout.
 const startTimeout = function () {
   const duration = $("#timeoutDuration").val().split(":");

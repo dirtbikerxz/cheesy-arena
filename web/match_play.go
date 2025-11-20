@@ -361,6 +361,15 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 			web.arena.RealtimeScoreNotifier.Notify()
 			web.arena.AllianceStationDisplayModeNotifier.Notify()
 			web.arena.ScoringStatusNotifier.Notify()
+		case "rebootSwitch":
+			target, ok := data.(string)
+			if !ok {
+				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				continue
+			}
+			if err := web.arena.RebootSwitch(target); err != nil {
+				ws.WriteError(err.Error())
+			}
 		case "setAudienceDisplay":
 			mode, ok := data.(string)
 			if !ok {

@@ -21,19 +21,25 @@ Display showing robot connection status.
 
   <body>
     <div id="matchStatusRow" class="ds-dependent">
-      {{if .EventSettings.NetworkSecurityEnabled}}
-      <div id="matchName" class="text-start" style="width: 20%; padding-left: 1%;"></div>
-      <div id="fieldConnection" style="width: 25%; padding-left: 1%;">
-        <span class="badge badge-status" id="accessPointStatus"><i class="bi bi-wifi"></i> Access Point
-        </span>
-        <span class="badge badge-status" id="switchStatus"> <i class="bi bi-hdd-network"></i> Switch</span>
+      <div class="status-group status-left">
+        <div id="matchName" class="text-start"></div>
+        <div class="status-badges">
+          <span class="badge badge-status" id="redTeamSwitchStatus">Red Team</span>
+          <span class="badge badge-status" id="redFMSSwitchStatus">Red FMS</span>
+        </div>
       </div>
-      {{end}}
-      {{if not .EventSettings.NetworkSecurityEnabled}}
-      <div id="matchName" class="text-start" style="width: 45%; padding-left: 1%;"></div>
-      {{end}}
-      <div id="matchTime" class="text-center" style="width: 10%;"></div>
-      <div id="matchState" class="text-end" style="width: 45%; padding-right: 1%;"></div>
+      <div class="status-group status-center">
+        <span class="badge badge-status" id="accessPointStatus"><i class="bi bi-wifi"></i> Access Point</span>
+        <span class="badge badge-status" id="coreSwitchStatus"><i class="bi bi-hdd-network"></i> Core Switch</span>
+      </div>
+      <div class="status-group status-right">
+        <div class="status-badges">
+          <span class="badge badge-status" id="blueTeamSwitchStatus">Blue Team</span>
+          <span class="badge badge-status" id="blueFMSSwitchStatus">Blue FMS</span>
+        </div>
+        <div id="matchState" class="text-end"></div>
+        <div id="matchTime" class="text-end"></div>
+      </div>
     </div>
     {{template "row" dict "leftPosition" "1" "rightPosition" "3"}}
     {{template "row" dict "leftPosition" "2" "rightPosition" "2"}}

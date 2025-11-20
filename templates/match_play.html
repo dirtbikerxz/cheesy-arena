@@ -105,15 +105,25 @@ UI for controlling match play and viewing team connection and field status.
           <p>
             <h8>Core Networking</h8>
             <span class="badge badge-status" id="accessPointStatus">Access Point</span>
-            <span class="badge badge-status" id="coreSwitchStatus">Core Switch</span>
+            <span class="badge badge-status" id="coreSwitchStatus" onclick="rebootSwitch('core');"
+              data-bs-toggle="tooltip" data-bs-placement="top"
+              title="Click to manually reboot the Core Switch.">Core Switch</span>
             <br/>
             <h8>Team Switches</h8>
             <br/>
-            <span class="badge badge-status" id="redTeamSwitchStatus">Red Team</span>
-            <span class="badge badge-status" id="redFMSSwitchStatus">Red FMS</span>
+            <span class="badge badge-status" id="redTeamSwitchStatus" onclick="rebootSwitch('redTeam');"
+              data-bs-toggle="tooltip" data-bs-placement="top"
+              title="Click to manually reboot the Red Team switch.">Red Team</span>
+            <span class="badge badge-status" id="redFMSSwitchStatus" onclick="rebootSwitch('redFms');"
+              data-bs-toggle="tooltip" data-bs-placement="top"
+              title="Click to manually reboot the Red FMS switch.">Red FMS</span>
             <br/>
-            <span class="badge badge-status" id="blueTeamSwitchStatus">Blue Team</span>
-            <span class="badge badge-status" id="blueFMSSwitchStatus">Blue FMS</span>
+            <span class="badge badge-status" id="blueTeamSwitchStatus" onclick="rebootSwitch('blueTeam');"
+              data-bs-toggle="tooltip" data-bs-placement="top"
+              title="Click to manually reboot the Blue Team switch.">Blue Team</span>
+            <span class="badge badge-status" id="blueFMSSwitchStatus" onclick="rebootSwitch('blueFms');"
+              data-bs-toggle="tooltip" data-bs-placement="top"
+              title="Click to manually reboot the Blue FMS switch.">Blue FMS</span>
           </p>
           {{end}}
           {{if .PlcIsEnabled}}

@@ -85,7 +85,11 @@ const handleArenaStatus = function (data) {
     teamRadioIconElement.attr("class", `bi-reception-${wifiStatus.ConnectionQuality}`);
 
     $("#accessPointStatus").attr("data-status", data.AccessPointStatus);
-    $("#switchStatus").attr("data-status", data.SwitchStatus);
+    $("#coreSwitchStatus").attr("data-status", data.CoreSwitchStatus);
+    $("#redTeamSwitchStatus").attr("data-status", data.RedTeamSwitchStatus);
+    $("#redFMSSwitchStatus").attr("data-status", data.RedFMSSwitchStatus);
+    $("#blueTeamSwitchStatus").attr("data-status", data.BlueTeamSwitchStatus);
+    $("#blueFMSSwitchStatus").attr("data-status", data.BlueFMSSwitchStatus);
 
     if (stationStatus.DsConn) {
       // Format the driver station status box.

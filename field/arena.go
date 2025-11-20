@@ -1262,6 +1262,40 @@ func (arena *Arena) StationRpiStatuses() map[string]StationRpiStatus {
 	return statuses
 }
 
+// RebootSwitch triggers a manual reboot of a managed switch if enabled.
+func (arena *Arena) RebootSwitch(target string) error {
+	switch target {
+	case "core":
+		if !arena.EventSettings.CoreSwitchManagementEnabled {
+			return fmt.Errorf("core switch management is disabled")
+		}
+		go arena.coreSwitch.Reboot()
+	case "redTeam":
+		if !arena.EventSettings.RedTeamSwitchManagementEnabled {
+			return fmt.Errorf("red team switch management is disabled")
+		}
+		go arena.redTeamSwitch.Reboot()
+	case "redFms":
+		if !arena.EventSettings.RedFMSSwitchManagementEnabled {
+			return fmt.Errorf("red FMS switch management is disabled")
+		}
+		go arena.redFMSSwitch.Reboot()
+	case "blueTeam":
+		if !arena.EventSettings.BlueTeamSwitchManagementEnabled {
+			return fmt.Errorf("blue team switch management is disabled")
+		}
+		go arena.blueTeamSwitch.Reboot()
+	case "blueFms":
+		if !arena.EventSettings.BlueFMSSwitchManagementEnabled {
+			return fmt.Errorf("blue FMS switch management is disabled")
+		}
+		go arena.blueFMSSwitch.Reboot()
+	default:
+		return fmt.Errorf("invalid switch '%s'", target)
+	}
+	return nil
+}
+
 func (arena *Arena) handleSounds(matchTimeSec float64) {
 	if arena.MatchState == PreMatch || arena.MatchState == TimeoutActive || arena.MatchState == PostTimeout {
 		// Only apply this logic during a match.

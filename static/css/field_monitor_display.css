@@ -40,6 +40,32 @@ body {
 #matchStatusRow[data-ds="true"][data-preMatch="false"] {
   display: none;
 }
+.status-group {
+  display: flex;
+  align-items: center;
+  gap: 0.6vw;
+}
+.status-group.status-left,
+.status-group.status-right {
+  width: 30%;
+  justify-content: space-between;
+}
+.status-group.status-center {
+  justify-content: center;
+  gap: 1vw;
+}
+.status-badges {
+  display: flex;
+  gap: 0.4vw;
+}
+.status-group #matchName {
+  min-width: 12vw;
+}
+.status-group #matchState,
+.status-group #matchTime {
+  min-width: 8vw;
+  text-align: right;
+}
 #eventStatusRow {
   height: 7%;
   display: flex;
