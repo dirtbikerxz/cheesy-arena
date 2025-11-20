@@ -146,14 +146,23 @@ const hideMatchPlayError = function() {
 };
 
 let remoteStopStations = [];
+let wrongStationActive = false;
 
 // Handles a websocket message to update the team connection status.
 const handleArenaStatus = function (data) {
   // Update the team status view.
   remoteStopStations = [];
+  wrongStationActive = false;
   $.each(data.AllianceStations, function (station, stationStatus) {
     const wifiStatus = stationStatus.WifiStatus;
     $("#status" + station + " .radio-status").text(wifiStatus.TeamId);
+
+    if (stationStatus.DsConn && stationStatus.DsConn.WrongStation) {
+      wrongStationActive = true;
+      showMatchPlayError(
+        `Team ${stationStatus.DsConn.TeamId} is connected to ${stationStatus.DsConn.WrongStation}; move it to ${station} for the current match.`
+      );
+    }
 
     if (stationStatus.DsConn) {
       // Format the driver station status box.
@@ -211,6 +220,10 @@ const handleArenaStatus = function (data) {
       bypassElement.text("");
     }
   });
+
+  if (!wrongStationActive && remoteStopStations.length === 0) {
+    hideMatchPlayError();
+  }
 
   // Enable/disable the buttons based on the current match state.
   switch (matchStates[data.MatchState]) {
