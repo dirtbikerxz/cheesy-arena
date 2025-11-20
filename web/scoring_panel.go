@@ -122,9 +122,6 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		if score.GenericStates == nil {
 			score.GenericStates = map[string]string{}
 		}
-		if score.GenericScoring == nil {
-			score.GenericScoring = map[string]int{}
-		}
 		scoreChanged := false
 
 		if command == "commitMatch" {

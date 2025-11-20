@@ -14,8 +14,9 @@
           "color": "#20ee38",
           "scoringId": "score_1763678516955",
           "position": {
-            "row": 2,
-            "colSpan": 1
+            "row": 3,
+            "colSpan": 1,
+            "col": 2
           }
         },
         {

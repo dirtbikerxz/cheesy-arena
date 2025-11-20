@@ -17,7 +17,6 @@ type Score struct {
 	GenericCounters map[string]int
 	GenericToggles  map[string]bool
 	GenericStates   map[string]string
-	GenericScoring  map[string]int
 }
 
 // Game-specific settings that can be changed via the settings.

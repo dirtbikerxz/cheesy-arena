@@ -17,15 +17,15 @@ func (score *Score) summarizeFromConfig(opponentScore *Score) *ScoreSummary {
 	if score.GenericStates == nil {
 		score.GenericStates = map[string]string{}
 	}
-	if score.GenericScoring == nil {
-		score.GenericScoring = map[string]int{}
-	}
+
+	// Derive scoring counts on the fly instead of persisting to avoid stale accumulation.
+	scoringCounts := map[string]int{}
 
 	// Calculate points from generic widgets.
 	for widgetId, value := range score.GenericCounters {
 		if widget := ActiveGameConfig.WidgetById(widgetId); widget != nil {
 			if widget.ScoringId != "" {
-				score.GenericScoring[widget.ScoringId] += value
+				scoringCounts[widget.ScoringId] += value
 			} else {
 				summary.MatchPoints += value * widget.PointValue
 			}
@@ -38,7 +38,7 @@ func (score *Score) summarizeFromConfig(opponentScore *Score) *ScoreSummary {
 		}
 		if widget := ActiveGameConfig.WidgetById(widgetId); widget != nil {
 			if widget.ScoringId != "" {
-				score.GenericScoring[widget.ScoringId]++
+				scoringCounts[widget.ScoringId]++
 			} else {
 				summary.MatchPoints += widget.PointValue
 			}
@@ -49,7 +49,7 @@ func (score *Score) summarizeFromConfig(opponentScore *Score) *ScoreSummary {
 		if widget := ActiveGameConfig.WidgetById(widgetId); widget != nil {
 			if points, ok := widget.StatePoints[state]; ok {
 				if widget.ScoringId != "" {
-					score.GenericScoring[widget.ScoringId]++
+					scoringCounts[widget.ScoringId]++
 					summary.MatchPoints += points
 				} else {
 					summary.MatchPoints += points
@@ -60,7 +60,7 @@ func (score *Score) summarizeFromConfig(opponentScore *Score) *ScoreSummary {
 
 	// Apply scoring element point values.
 	for _, scoring := range ActiveGameConfig.Scoring {
-		count := score.GenericScoring[scoring.Id]
+		count := scoringCounts[scoring.Id]
 		summary.MatchPoints += count * scoring.PointValue
 	}
 
