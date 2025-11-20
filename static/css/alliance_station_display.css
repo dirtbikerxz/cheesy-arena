@@ -190,24 +190,24 @@ body[data-position=right] #inMatch #blueScore {
   gap: 0.5vw;
 }
 .left-badges .status-badge {
-  min-width: 90px;
+  min-width: 130px;
   justify-content: center;
 }
 .status-message {
-  padding: 0.4vw 0.8vw;
+  padding: 0.8vw 1.2vw;
   border-radius: 12px;
   background-color: #222;
   color: #ff0;
-  font-size: 0.9vw;
+  font-size: 1.5vw;
   text-align: center;
 }
 .status-message.d-none {
   display: none;
 }
 .status-badge {
-  padding: 0.3vw 0.8vw;
+  padding: 0.55vw 1.2vw;
   border-radius: 999px;
-  font-size: 0.8vw;
+  font-size: 1.3vw;
   text-transform: uppercase;
   font-weight: bold;
   color: #000;
