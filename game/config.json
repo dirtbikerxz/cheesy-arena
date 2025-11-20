@@ -1,0 +1,74 @@
+{
+  "name": "Generic FRC Scrimmage",
+  "panels": [
+    {
+      "id": "red_near",
+      "title": "red near",
+      "widgets": [
+        {
+          "id": "counter_1763677047755",
+          "type": "counter",
+          "label": "Test",
+          "points": "+3",
+          "phase": "any",
+          "color": "#20ee38",
+          "scoringId": "score_1763678516955",
+          "position": {
+            "row": 2,
+            "colSpan": 1
+          }
+        },
+        {
+          "id": "toggle_1763677089854",
+          "type": "toggle",
+          "label": "Toggle",
+          "points": "+1",
+          "phase": "any",
+          "color": "#22d3ee",
+          "scoringId": "score_1763678516955"
+        },
+        {
+          "id": "text_1763677684995",
+          "type": "text",
+          "label": "Text",
+          "points": "+1dw",
+          "phase": "any",
+          "color": "#22d3ee"
+        }
+      ]
+    },
+    {
+      "id": "red_far",
+      "title": "red far",
+      "widgets": []
+    },
+    {
+      "id": "blue_near",
+      "title": "blue near",
+      "widgets": []
+    },
+    {
+      "id": "blue_far",
+      "title": "blue far",
+      "widgets": []
+    },
+    {
+      "id": "referee",
+      "title": "referee",
+      "widgets": []
+    },
+    {
+      "id": "head_ref",
+      "title": "head ref",
+      "widgets": []
+    }
+  ],
+  "scoring": [
+    {
+      "id": "score_1763678516955",
+      "label": "Scoring Item",
+      "pointValue": 3,
+      "phase": "any"
+    }
+  ]
+}

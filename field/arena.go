@@ -155,6 +155,7 @@ func NewArena(dbPath string) (*Arena, error) {
 	if err != nil {
 		return nil, err
 	}
+	_ = arena.LoadGameConfig()
 	if err = arena.loadDisplayConfigurations(); err != nil {
 		return nil, err
 	}
@@ -230,11 +231,6 @@ func (arena *Arena) LoadSettings() error {
 	game.MatchTiming.WarningRemainingDurationSec = settings.WarningRemainingDurationSec
 	game.UpdateMatchSounds()
 	arena.MatchTimingNotifier.Notify()
-
-	game.AutoBonusCoralThreshold = settings.AutoBonusCoralThreshold
-	game.CoralBonusPerLevelThreshold = settings.CoralBonusPerLevelThreshold
-	game.CoralBonusCoopEnabled = settings.CoralBonusCoopEnabled
-	game.BargeBonusPointThreshold = settings.BargeBonusPointThreshold
 
 	// Reconstruct the playoff tournament in memory.
 	if err = arena.CreatePlayoffTournament(); err != nil {

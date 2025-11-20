@@ -14,6 +14,10 @@ type Score struct {
 	EndgameStatuses [3]EndgameStatus
 	Fouls           []Foul
 	PlayoffDq       bool
+	GenericCounters map[string]int
+	GenericToggles  map[string]bool
+	GenericStates   map[string]string
+	GenericScoring  map[string]int
 }
 
 // Game-specific settings that can be changed via the settings.
@@ -34,6 +38,9 @@ const (
 
 // Summarize calculates and returns the summary fields used for ranking and display.
 func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
+	if ActiveGameConfig != nil {
+		return score.summarizeFromConfig(opponentScore)
+	}
 	summary := new(ScoreSummary)
 
 	// Leave the score at zero if the alliance was disqualified.
@@ -160,6 +167,9 @@ func (score *Score) Equals(other *Score) bool {
 		score.ProcessorAlgae != other.ProcessorAlgae ||
 		score.EndgameStatuses != other.EndgameStatuses ||
 		score.PlayoffDq != other.PlayoffDq ||
+		!mapsEqual(score.GenericCounters, other.GenericCounters) ||
+		!boolMapsEqual(score.GenericToggles, other.GenericToggles) ||
+		!stringMapsEqual(score.GenericStates, other.GenericStates) ||
 		len(score.Fouls) != len(other.Fouls) {
 		return false
 	}
@@ -170,5 +180,41 @@ func (score *Score) Equals(other *Score) bool {
 		}
 	}
 
+	return true
+}
+
+func mapsEqual(a, b map[string]int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for k, v := range a {
+		if b[k] != v {
+			return false
+		}
+	}
+	return true
+}
+
+func boolMapsEqual(a, b map[string]bool) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for k, v := range a {
+		if b[k] != v {
+			return false
+		}
+	}
+	return true
+}
+
+func stringMapsEqual(a, b map[string]string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for k, v := range a {
+		if b[k] != v {
+			return false
+		}
+	}
 	return true
 }

@@ -1,268 +1,189 @@
-// Copyright 2014 Team 254. All Rights Reserved.
-// Author: pat@patfairbank.com (Patrick Fairbank)
-// Author: ian@yann.io (Ian Thompson)
-//
-// Client-side logic for the scoring interface.
+// Dynamic scoring panel powered by the game configuration.
 
-var websocket;
+let websocket;
 let alliance;
-let nearSide;
-let committed = false;
-
-// True when scoring controls in general should be available
 let scoringAvailable = false;
-// True when the commit button should be available
 let commitAvailable = false;
-// True when teleop-only scoring controls should be available
-let inTeleop = false;
-// True when post-auto and in edit auto mode
-let editingAuto = false;
+let committed = false;
+let currentPhase = "pregame";
 
-let localFoulCounts = {
-  "red-minor": 0,
-  "blue-minor": 0,
-  "red-major": 0,
-  "blue-major": 0,
-}
-
-// Handle controls to open/close the endgame dialog
-const endgameDialog = $("#endgame-dialog")[0];
-const showEndgameDialog = function () {
-  endgameDialog.showModal();
-}
-const closeEndgameDialog = function () {
-  endgameDialog.close();
-}
-const closeEndgameDialogIfOutside = function (event) {
-  if (event.target === endgameDialog) {
-    closeEndgameDialog();
-  }
-}
-
-const foulsDialog = $("#fouls-dialog")[0];
-const showFoulsDialog = function () {
-  foulsDialog.showModal();
-}
-const closeFoulsDialog = function () {
-  foulsDialog.close();
-}
-const closeFoulsDialogIfOutside = function (event) {
-  if (event.target === foulsDialog) {
-    closeFoulsDialog();
-  }
-}
-
-// Handles a websocket message to update the teams for the current match.
-const handleMatchLoad = function (data) {
-  $("#matchName").text(data.Match.LongName);
-  if (alliance === "red") {
-    $(".team-1 .team-num").text(data.Match.Red1);
-    $(".team-2 .team-num").text(data.Match.Red2);
-    $(".team-3 .team-num").text(data.Match.Red3);
-  } else {
-    $(".team-1 .team-num").text(data.Match.Blue1);
-    $(".team-2 .team-num").text(data.Match.Blue2);
-    $(".team-3 .team-num").text(data.Match.Blue3);
-  }
+const state = {
+  widgets: {},
 };
 
-const renderLocalFoulCounts = function () {
-  for (const foulType in localFoulCounts) {
-    const count = localFoulCounts[foulType];
-    $(`#foul-${foulType} .fouls-local`).text(count);
-  }
-}
+const parseWidget = (el) => {
+  return {
+    id: el.dataset.widgetId,
+    type: el.dataset.widgetType,
+    points: parseInt(el.dataset.points || "0", 10),
+    states: el.dataset.states || "",
+    el,
+  };
+};
 
-const resetFoulCounts = function () {
-  localFoulCounts["red-minor"] = 0;
-  localFoulCounts["blue-minor"] = 0;
-  localFoulCounts["red-major"] = 0;
-  localFoulCounts["blue-major"] = 0;
-  renderLocalFoulCounts();
-}
+const initWidgets = () => {
+  document.querySelectorAll(".widget-card").forEach((el) => {
+    const widget = parseWidget(el);
+    state.widgets[widget.id] = widget;
 
-const addFoul = function (alliance, isMajor) {
-  const foulType = `${alliance}-${isMajor ? "major" : "minor"}`;
-  localFoulCounts[foulType] += 1;
-  websocket.send("addFoul", {Alliance: alliance, IsMajor: isMajor});
-  renderLocalFoulCounts();
-}
+    if (widget.type === "counter") {
+      el.querySelector(".widget-inc")?.addEventListener("click", () => sendWidget(widget.id, { delta: 1 }));
+      el.querySelector(".widget-dec")?.addEventListener("click", () => sendWidget(widget.id, { delta: -1 }));
+    } else if (widget.type === "toggle") {
+      el.querySelector(".widget-toggle")?.addEventListener("click", () => sendWidget(widget.id, { action: "toggle" }));
+    } else if (widget.type === "multistate") {
+      el.querySelectorAll(".widget-state").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          el.querySelectorAll(".widget-state").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          sendWidget(widget.id, { state: btn.dataset.state });
+        });
+      });
+    } else if (widget.type === "foul") {
+      el.querySelector(".widget-foul")?.addEventListener("click", () => {
+        addFoul(alliance === "blue" ? "red" : "blue", false);
+      });
+    }
 
-// Handles a websocket message to update the match status.
-const handleMatchTime = function (data) {
+    el.addEventListener("click", () => {
+      el.classList.add("selected");
+      Object.values(state.widgets).forEach((w) => {
+        if (w.id !== widget.id) w.el.classList.remove("selected");
+      });
+    });
+  });
+};
+
+const connect = () => {
+  const pathParts = window.location.pathname.split("/");
+  const position = pathParts[pathParts.length - 1];
+  alliance = position.split("_")[0];
+  document.body.dataset.alliance = alliance;
+
+  websocket = new CheesyWebsocket("/panels/scoring/" + position + "/websocket", {
+    matchLoad: (event) => handleMatchLoad(event.data),
+    matchTime: (event) => handleMatchTime(event.data),
+    realtimeScore: (event) => handleRealtimeScore(event.data),
+    resetLocalState: () => resetLocalState(),
+  });
+};
+
+const sendWidget = (widgetId, opts) => {
+  websocket.send("widget", {
+    WidgetId: widgetId,
+    Delta: opts.delta || 0,
+    Action: opts.action || "",
+    State: opts.state || "",
+  });
+};
+
+const handleMatchLoad = (data) => {
+  $("#matchName").text(data.Match.LongName);
+  committed = false;
+};
+
+const handleMatchTime = (data) => {
   switch (matchStates[data.MatchState]) {
     case "AUTO_PERIOD":
-    case "PAUSE_PERIOD":
+      currentPhase = "auto";
       scoringAvailable = true;
       commitAvailable = false;
-      inTeleop = false;
-      editingAuto = false;
-      committed = false;
+      break;
+    case "PAUSE_PERIOD":
+      currentPhase = "auto";
+      scoringAvailable = true;
+      commitAvailable = false;
       break;
     case "TELEOP_PERIOD":
+      currentPhase = "teleop";
       scoringAvailable = true;
       commitAvailable = false;
-      inTeleop = true;
-      committed = false;
       break;
     case "POST_MATCH":
-      if (!committed) {
-        scoringAvailable = true;
-        commitAvailable = true;
-        inTeleop = true;
-      }
+      currentPhase = "post";
+      scoringAvailable = true;
+      commitAvailable = !committed;
       break;
     default:
+      currentPhase = "pregame";
       scoringAvailable = false;
       commitAvailable = false;
-      inTeleop = false;
-      editingAuto = false;
-      committed = false;
-      resetFoulCounts();
   }
-  updateUIMode();
+  updateUiState();
 };
 
-// Switch in and out of autonomous editing mode
-const toggleEditAuto = function () {
-  editingAuto = !editingAuto;
-  updateUIMode();
-}
-
-// Clear any local ephemeral state that is not maintained by the server
-const resetLocalState = function () {
-  committed = false;
-  editingAuto = false;
-  updateUIMode();
-}
-
-// Refresh which UI controls are enabled/disabled
-const updateUIMode = function () {
-  $(".scoring-button").prop('disabled', !scoringAvailable);
-  $(".scoring-teleop-button").prop('disabled', !(inTeleop && scoringAvailable));
-  $("#commit").prop('disabled', !commitAvailable);
-  $("#edit-auto").prop('disabled', !(inTeleop && scoringAvailable));
-  $(".container").attr("data-scoring-auto", (!inTeleop || editingAuto) && scoringAvailable);
-  $(".container").attr("data-in-teleop", inTeleop && scoringAvailable);
-  $("#edit-auto").text(editingAuto ? "Save Auto" : "Edit Auto");
-}
-
-const endgameStatusNames = [
-  "None",
-  "Park",
-  "Shallow",
-  "Deep",
-];
-
-// Handles a websocket message to update the realtime scoring fields.
-const handleRealtimeScore = function (data) {
-  let realtimeScore;
-  if (alliance === "red") {
-    realtimeScore = data.Red;
-  } else {
-    realtimeScore = data.Blue;
-  }
+const handleRealtimeScore = (data) => {
+  const realtimeScore = alliance === "red" ? data.Red : data.Blue;
   const score = realtimeScore.Score;
 
-  for (let i = 0; i < 3; i++) {
-    const i1 = i + 1;
-    $(`#auto-status-${i1} > .team-text`).text(score.LeaveStatuses[i] ? "Leave" : "None");
-    $(`#auto-status-${i1}`).attr("data-selected", score.LeaveStatuses[i]);
-    $(`#endgame-status-${i1} > .team-text`).text(endgameStatusNames[score.EndgameStatuses[i]]);
-    $(`#endgame-status-${i1}`).attr("data-selected", endgameStatusNames[score.EndgameStatuses[i]] != "None");
-    for (let j = 0; j < endgameStatusNames.length; j++) {
-      $(`#endgame-input-${i1} .endgame-${j}`).attr("data-selected", j == score.EndgameStatuses[i]);
+  // Counters
+  Object.entries(score.GenericCounters || {}).forEach(([id, val]) => {
+    document.querySelector(`[data-widget-id="${id}"] .widget-value`)?.replaceChildren(document.createTextNode(val));
+  });
+  // Toggles
+  Object.entries(score.GenericToggles || {}).forEach(([id, val]) => {
+    const btn = document.querySelector(`[data-widget-id="${id}"] .widget-toggle`);
+    if (btn) {
+      btn.textContent = val ? "On" : "Off";
+      btn.classList.toggle("active", !!val);
     }
-  }
-
-  for (let i = 0; i < 12; i++) {
-    const i1 = i + 1;
-    for (let j = 0; j < 3; j++) {
-      const j2 = j + 2;
-      $(`#reef-column-${i1}`).attr(`data-l${j2}-scored`, score.Reef.Branches[j][i]);
-      $(`#reef-column-${i1}`).attr(`data-l${j2}-auto-scored`, score.Reef.AutoBranches[j][i]);
-    }
-  }
-
-  const l1Total = score.Reef.TroughNear + score.Reef.TroughFar;
-  $("#l1-total-count").text(l1Total);
-  
-  $(`#barge .counter-value`).text(score.BargeAlgae);
-  $(`#processor .counter-value`).text(score.ProcessorAlgae);
-
-  if (nearSide) {
-    $(`#trough .counter-value`).text(score.Reef.TroughNear);
-    $(`#trough .counter-auto-value`).text(score.Reef.AutoTroughNear);
-  } else {
-    $(`#trough .counter-value`).text(score.Reef.TroughFar);
-    $(`#trough .counter-auto-value`).text(score.Reef.AutoTroughFar);
-  }
-
-  redFouls = data.Red.Score.Fouls || [];
-  blueFouls = data.Blue.Score.Fouls || [];
-  $(`#foul-blue-minor .fouls-global`).text(blueFouls.filter(foul => !foul.IsMajor).length)
-  $(`#foul-blue-major .fouls-global`).text(blueFouls.filter(foul => foul.IsMajor).length)
-  $(`#foul-red-minor .fouls-global`).text(redFouls.filter(foul => !foul.IsMajor).length)
-  $(`#foul-red-major .fouls-global`).text(redFouls.filter(foul => foul.IsMajor).length)
+  });
+  // Multistate
+  Object.entries(score.GenericStates || {}).forEach(([id, state]) => {
+    document.querySelectorAll(`[data-widget-id="${id}"] .widget-state`).forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.state === state);
+    });
+  });
 };
 
-// Websocket message senders for various buttons
-const handleCounterClick = function (command, adjustment) {
-  websocket.send(command, {
-    Adjustment: adjustment,
-    Current: true,
-    Autonomous: !inTeleop || editingAuto,
-    NearSide: nearSide
-  });
-}
-const handleLeaveClick = function (teamPosition) {
-  websocket.send("leave", {TeamPosition: teamPosition});
-}
-const handleEndgameClick = function (teamPosition, endgameStatus) {
-  websocket.send("endgame", {TeamPosition: teamPosition, EndgameStatus: endgameStatus});
-}
-const handleReefClick = function (reefPosition, reefLevel) {
-  websocket.send("reef", {
-    ReefPosition: reefPosition,
-    ReefLevel: reefLevel,
-    Current: !editingAuto,
-    Autonomous: !inTeleop || editingAuto,
-    NearSide: nearSide
-  });
-}
-
-// Sends a websocket message to indicate that the score for this alliance is ready.
-const commitMatchScore = function () {
-  websocket.send("commitMatch");
-
+const commitMatchScore = () => {
+  websocket.send("commitMatch", {});
   committed = true;
-  scoringAvailable = false;
   commitAvailable = false;
-  inTeleop = false;
-  editingAuto = false;
-  updateUIMode();
+  updateUiState();
 };
 
-$(function () {
-  position = window.location.href.split("/").slice(-1)[0];
-  [alliance, side] = position.split("_");
-  $(".container").attr("data-alliance", alliance);
-  nearSide = side === "near";
-  resetLocalState();
+const addFoul = (foulAlliance, isMajor) => {
+  websocket.send("addFoul", { Alliance: foulAlliance, IsMajor: isMajor });
+};
 
-  // Set up the websocket back to the server.
-  websocket = new CheesyWebsocket("/panels/scoring/" + position + "/websocket", {
-    matchLoad: function (event) {
-      handleMatchLoad(event.data);
-    },
-    matchTime: function (event) {
-      handleMatchTime(event.data);
-    },
-    realtimeScore: function (event) {
-      handleRealtimeScore(event.data);
-    },
-    resetLocalState: function (event) {
-      resetLocalState();
-    },
+const resetLocalState = () => {};
+
+const updateUiState = () => {
+  document.querySelectorAll(".widget-card").forEach((card) => {
+    const phase = card.dataset.phase || "any";
+    const disableForPhase =
+      phase === "auto"
+        ? currentPhase !== "auto"
+        : phase === "teleop"
+        ? currentPhase !== "teleop"
+        : phase === "endgame"
+        ? !(currentPhase === "post" || currentPhase === "teleop")
+        : false;
+    card.querySelectorAll("button").forEach((btn) => {
+      btn.disabled = !scoringAvailable || disableForPhase;
+    });
   });
+  $("#commit").prop("disabled", !commitAvailable);
+  $("#fouls-button").prop("disabled", !scoringAvailable);
+};
+
+window.addEventListener("load", () => {
+  initWidgets();
+  connect();
 });
+
+window.addFoul = addFoul;
+window.commitMatchScore = commitMatchScore;
+window.openFoulDialog = () => {
+  document.getElementById("fouls-dialog").showModal();
+};
+window.closeFoulsDialog = () => {
+  document.getElementById("fouls-dialog").close();
+};
+window.closeFoulsDialogIfOutside = (event) => {
+  const dialog = document.getElementById("fouls-dialog");
+  if (event.target === dialog) {
+    closeFoulsDialog();
+  }
+};

@@ -18,60 +18,6 @@ import (
 	"strings"
 )
 
-type ScoringPosition struct {
-	Title            string
-	Alliance         string
-	NearSide         bool
-	ScoresAuto       bool
-	ScoresEndgame    bool
-	ScoresBarge      bool
-	ScoresProcessor  bool
-	LeftmostReefPole int
-}
-
-var positionParameters = map[string]ScoringPosition{
-	"red_near": {
-		Title:            "Red Near",
-		Alliance:         "red",
-		NearSide:         true,
-		ScoresAuto:       true,
-		ScoresEndgame:    true,
-		ScoresBarge:      true,
-		ScoresProcessor:  false,
-		LeftmostReefPole: 6,
-	},
-	"red_far": {
-		Title:            "Red Far",
-		Alliance:         "red",
-		NearSide:         false,
-		ScoresAuto:       false,
-		ScoresEndgame:    false,
-		ScoresBarge:      false,
-		ScoresProcessor:  true,
-		LeftmostReefPole: 0,
-	},
-	"blue_near": {
-		Title:            "Blue Near",
-		Alliance:         "blue",
-		NearSide:         true,
-		ScoresAuto:       false,
-		ScoresEndgame:    false,
-		ScoresBarge:      false,
-		ScoresProcessor:  true,
-		LeftmostReefPole: 0,
-	},
-	"blue_far": {
-		Title:            "Blue Far",
-		Alliance:         "blue",
-		NearSide:         false,
-		ScoresAuto:       true,
-		ScoresEndgame:    true,
-		ScoresBarge:      true,
-		ScoresProcessor:  false,
-		LeftmostReefPole: 6,
-	},
-}
-
 // Renders the scoring interface which enables input of scores in real-time.
 func (web *Web) scoringPanelHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
@@ -79,11 +25,14 @@ func (web *Web) scoringPanelHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	position := r.PathValue("position")
-	parameters, ok := positionParameters[position]
-	if !ok {
-		handleWebErr(w, fmt.Errorf("Invalid position '%s'.", position))
-		return
+	var panelConfig *game.PanelConfig
+	if game.ActiveGameConfig != nil {
+		panelConfig = game.ActiveGameConfig.PanelById(position)
 	}
+	if panelConfig == nil {
+		panelConfig = &game.PanelConfig{Id: position, Title: position}
+	}
+	alliance := strings.Split(position, "_")[0]
 
 	template, err := web.parseFiles("templates/scoring_panel.html", "templates/base.html")
 	if err != nil {
@@ -94,8 +43,15 @@ func (web *Web) scoringPanelHandler(w http.ResponseWriter, r *http.Request) {
 		*model.EventSettings
 		PlcIsEnabled bool
 		PositionName string
-		Position     ScoringPosition
-	}{web.arena.EventSettings, web.arena.Plc.IsEnabled(), position, parameters}
+		Panel        *game.PanelConfig
+		Alliance     string
+	}{
+		web.arena.EventSettings,
+		web.arena.Plc.IsEnabled(),
+		position,
+		panelConfig,
+		alliance,
+	}
 	err = template.ExecuteTemplate(w, "base_no_navbar", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -110,7 +66,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	position := r.PathValue("position")
-	if position != "red_near" && position != "red_far" && position != "blue_near" && position != "blue_far" {
+	if game.ActiveGameConfig == nil || game.ActiveGameConfig.PanelById(position) == nil {
 		handleWebErr(w, fmt.Errorf("Invalid position '%s'.", position))
 		return
 	}
@@ -157,6 +113,18 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 		score := &(*realtimeScore).CurrentScore
+		if score.GenericCounters == nil {
+			score.GenericCounters = map[string]int{}
+		}
+		if score.GenericToggles == nil {
+			score.GenericToggles = map[string]bool{}
+		}
+		if score.GenericStates == nil {
+			score.GenericStates = map[string]string{}
+		}
+		if score.GenericScoring == nil {
+			score.GenericScoring = map[string]int{}
+		}
 		scoreChanged := false
 
 		if command == "commitMatch" {
@@ -167,63 +135,6 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 			web.arena.ScoringPanelRegistry.SetScoreCommitted(position, ws)
 			web.arena.ScoringStatusNotifier.Notify()
-		} else if command == "reef" {
-			args := struct {
-				ReefPosition int
-				ReefLevel    int
-				Current      bool
-				Autonomous   bool
-			}{}
-			err = mapstructure.Decode(data, &args)
-			if err != nil {
-				ws.WriteError(err.Error())
-				continue
-			}
-
-			if args.ReefPosition >= 1 && args.ReefPosition <= 12 && args.ReefLevel >= 2 && args.ReefLevel <= 4 {
-				level := game.Level(args.ReefLevel - 2)
-				reefIndex := args.ReefPosition - 1
-				if args.Current {
-					score.Reef.Branches[level][reefIndex] = !score.Reef.Branches[level][reefIndex]
-					scoreChanged = true
-				}
-				if args.Autonomous {
-					score.Reef.AutoBranches[level][reefIndex] = !score.Reef.AutoBranches[level][reefIndex]
-					scoreChanged = true
-				}
-				scoreChanged = true
-			}
-
-		} else if command == "endgame" {
-			args := struct {
-				TeamPosition  int
-				EndgameStatus int
-			}{}
-			err = mapstructure.Decode(data, &args)
-			if err != nil {
-				ws.WriteError(err.Error())
-				continue
-			}
-
-			if args.TeamPosition >= 1 && args.TeamPosition <= 3 && args.EndgameStatus >= 0 && args.EndgameStatus <= 3 {
-				endgameStatus := game.EndgameStatus(args.EndgameStatus)
-				score.EndgameStatuses[args.TeamPosition-1] = endgameStatus
-				scoreChanged = true
-			}
-		} else if command == "leave" {
-			args := struct {
-				TeamPosition int
-			}{}
-			err = mapstructure.Decode(data, &args)
-			if err != nil {
-				ws.WriteError(err.Error())
-				continue
-			}
-
-			if args.TeamPosition >= 1 && args.TeamPosition <= 3 {
-				score.LeaveStatuses[args.TeamPosition-1] = !score.LeaveStatuses[args.TeamPosition-1]
-				scoreChanged = true
-			}
 		} else if command == "addFoul" {
 			args := struct {
 				Alliance string
@@ -245,41 +156,36 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 					append(web.arena.BlueRealtimeScore.CurrentScore.Fouls, foul)
 			}
 			web.arena.RealtimeScoreNotifier.Notify()
-		} else {
+		} else if command == "widget" {
 			args := struct {
-				Adjustment int
-				Current    bool
-				Autonomous bool
-				NearSide   bool
+				WidgetId string
+				Action   string
+				Delta    int
+				State    string
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
 				ws.WriteError(err.Error())
 				continue
 			}
-
-			switch command {
-			case "barge":
-				score.BargeAlgae = max(0, score.BargeAlgae+args.Adjustment)
-				scoreChanged = true
-			case "processor":
-				score.ProcessorAlgae = max(0, score.ProcessorAlgae+args.Adjustment)
-				scoreChanged = true
-			case "trough":
-				if args.Current {
-					if args.NearSide {
-						score.Reef.TroughNear = max(0, score.Reef.TroughNear+args.Adjustment)
-					} else {
-						score.Reef.TroughFar = max(0, score.Reef.TroughFar+args.Adjustment)
-					}
-					scoreChanged = true
+			widget := game.ActiveGameConfig.WidgetById(args.WidgetId)
+			if widget == nil {
+				ws.WriteError(fmt.Sprintf("Unknown widget '%s'", args.WidgetId))
+				continue
+			}
+			switch widget.Type {
+			case "counter":
+				if args.Delta == 0 {
+					args.Delta = 1
 				}
-				if args.Autonomous {
-					if args.NearSide {
-						score.Reef.AutoTroughNear = max(0, score.Reef.AutoTroughNear+args.Adjustment)
-					} else {
-						score.Reef.AutoTroughFar = max(0, score.Reef.AutoTroughFar+args.Adjustment)
-					}
+				score.GenericCounters[widget.Id] = max(0, score.GenericCounters[widget.Id]+args.Delta)
+				scoreChanged = true
+			case "toggle":
+				score.GenericToggles[widget.Id] = !score.GenericToggles[widget.Id]
+				scoreChanged = true
+			case "multistate":
+				if args.State != "" {
+					score.GenericStates[widget.Id] = args.State
 					scoreChanged = true
 				}
 			}

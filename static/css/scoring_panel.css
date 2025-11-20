@@ -230,6 +230,7 @@ main {
   padding-bottom: 10px;
   display: flex;
   flex-direction: column;
+  gap: 10px;
 }
 
 #top-controls {
@@ -252,7 +253,7 @@ main {
 #bottom-controls {
   padding: 10px 1em;
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
 }
 
 #l1-total {
@@ -547,7 +548,7 @@ main {
 }
 
 #fouls-button {
-  flex: 0.5 0.5 0%;
+  min-width: 200px;
   border-radius: var(--button-border-radius);
   color: var(--text-active-dark);
   height: 100%;
@@ -669,4 +670,69 @@ dialog::backdrop {
 .foul-button-label {
   font-size: 24pt;
   font-weight: bold;
+}
+
+/* Dynamic widget layout */
+.panel-frame {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#widgetDeck {
+  padding: 0 1em;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.widget-card {
+  background: #00000030;
+  border: 1px solid var(--interaction-highlight);
+  border-radius: 12px;
+  padding: 10px;
+  color: var(--text-active);
+  min-height: 120px;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.35);
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.widget-label {
+  font-weight: bold;
+  font-size: 16pt;
+}
+
+.widget-pill {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--alliance-action);
+  color: var(--text-active);
+  font-size: 10pt;
+  text-transform: uppercase;
+}
+
+.state-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.widget-card .team-button {
+  width: 100%;
+}
+
+.empty-panel {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 16px;
+  border: 1px dashed var(--interaction-highlight);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
 }

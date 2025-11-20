@@ -1,0 +1,147 @@
+{{/*
+Game configuration builder for defining panels and scoring inputs without game-specific assumptions.
+*/}}
+{{define "title"}}Game Config Builder{{end}}
+{{define "body"}}
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+    {{if .ErrorMessage}}
+    <div class="alert alert-danger alert-dismissible">
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      {{.ErrorMessage}}
+    </div>
+    {{end}}
+    <div class="card card-body bg-body-tertiary">
+      <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+        <div>
+          <h4 class="mb-1">Game Configuration</h4>
+          <small class="text-muted">Drag elements onto each panel to define scoring and referee controls.</small>
+        </div>
+        <div class="button-group">
+          <form id="configForm" method="POST" class="d-inline">
+            <input type="hidden" id="config" name="config">
+            <button type="button" class="btn btn-primary me-2" onclick="builder.saveConfig();">Save</button>
+          </form>
+          <button type="button" class="btn btn-outline-light me-2" onclick="builder.exportConfig();">Export</button>
+          <label class="btn btn-outline-secondary mb-0">
+            Import <input type="file" class="d-none" accept="application/json" onchange="builder.importFile(event);">
+          </label>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Game Name</label>
+        <input type="text" id="gameName" class="form-control bg-body" placeholder="Custom Game" value="{{.ConfigName}}">
+      </div>
+      <div class="row">
+        <div class="col-lg-4 mb-3">
+          <div class="palette card card-body bg-body h-100">
+            <h6 class="text-uppercase mb-2">Palette</h6>
+            <p class="text-muted small mb-2">Drag to canvas</p>
+            <div class="palette-item" draggable="true" data-type="counter">Counter</div>
+            <div class="palette-item" draggable="true" data-type="toggle">Toggle</div>
+            <div class="palette-item" draggable="true" data-type="multistate">Multi-State</div>
+            <div class="palette-item" draggable="true" data-type="text">Label</div>
+            <div class="palette-item" draggable="true" data-type="foul">Foul Button</div>
+          </div>
+        </div>
+        <div class="col-lg-5 mb-3">
+          <div class="panel-tabs">
+            <button type="button" class="panel-tab active" data-panel="red_near">Red Near</button>
+            <button type="button" class="panel-tab" data-panel="red_far">Red Far</button>
+            <button type="button" class="panel-tab" data-panel="blue_near">Blue Near</button>
+            <button type="button" class="panel-tab" data-panel="blue_far">Blue Far</button>
+            <button type="button" class="panel-tab" data-panel="referee">Referee</button>
+            <button type="button" class="panel-tab" data-panel="head_ref">Head Ref</button>
+          </div>
+          <div id="canvasHost">
+            <div id="panel-canvas" class="canvas" data-panel="red_near"></div>
+          </div>
+        </div>
+        <div class="col-lg-3 mb-3">
+          <div class="card card-body bg-body h-100">
+            <h6 class="text-uppercase mb-2">Widget Properties</h6>
+            <div id="propertiesEmpty" class="text-muted small">Select a widget to edit its settings.</div>
+            <div id="propertiesForm" class="d-none">
+              <div class="mb-2">
+                <label class="form-label form-label-sm">Label</label>
+                <input type="text" id="propLabel" class="form-control form-control-sm bg-body">
+              </div>
+              <div class="mb-2">
+                <label class="form-label form-label-sm">Identifier</label>
+                <input type="text" id="propId" class="form-control form-control-sm bg-body">
+              </div>
+              <div class="mb-2">
+                <label class="form-label form-label-sm">Points / State Values</label>
+                <input type="text" id="propPoints" class="form-control form-control-sm bg-body"
+                  placeholder="e.g. +2 or stateA:3,stateB:1">
+              </div>
+              <div class="mb-2">
+                <label class="form-label form-label-sm">Scoring Element</label>
+                <select id="propScoring" class="form-select form-select-sm bg-body"></select>
+              </div>
+              <div class="mb-2">
+                <label class="form-label form-label-sm">Phase</label>
+                <select id="propPhase" class="form-select form-select-sm bg-body">
+                  <option value="any">Any</option>
+                  <option value="auto">Auto</option>
+                  <option value="teleop">Teleop</option>
+                  <option value="endgame">Endgame</option>
+                </select>
+              </div>
+              <div class="mb-2 d-flex gap-2">
+                <div>
+                  <label class="form-label form-label-sm">Row</label>
+                  <input type="number" id="propRow" class="form-control form-control-sm bg-body" min="1" value="1">
+                </div>
+                <div>
+                  <label class="form-label form-label-sm">Col</label>
+                  <input type="number" id="propCol" class="form-control form-control-sm bg-body" min="1" value="1">
+                </div>
+                <div>
+                  <label class="form-label form-label-sm">Col Span</label>
+                  <input type="number" id="propColSpan" class="form-control form-control-sm bg-body" min="1" value="1">
+                </div>
+              </div>
+              <div class="mb-2">
+                <label class="form-label form-label-sm">Color</label>
+                <input type="color" id="propColor" class="form-control form-control-sm form-control-color">
+              </div>
+              <button class="btn btn-sm btn-danger mt-2" onclick="builder.deleteSelected();">Delete Widget</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-12 mb-3">
+          <div class="card card-body bg-body">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h6 class="text-uppercase mb-0">Scoring Elements</h6>
+              <button class="btn btn-sm btn-outline-primary" onclick="builder.addScoringElement();">Add</button>
+            </div>
+            <div id="scoringList" class="table-responsive">
+              <table class="table table-sm table-dark align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Label</th>
+                    <th>Id</th>
+                    <th>Points Each</th>
+                    <th>Phase</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script id="initialConfig" type="application/json">{{.ConfigJson}}</script>
+{{end}}
+{{define "head"}}
+<link rel="stylesheet" href="/static/css/game_config_builder.css">
+{{end}}
+{{define "script"}}
+<script src="/static/js/game_config_builder.js"></script>
+{{end}}

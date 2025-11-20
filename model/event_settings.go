@@ -75,8 +75,8 @@ type EventSettings struct {
 	BlueFMSSwitchManagementEnabled  bool
 	BlueFMSSwitchAddress            string
 	BlueFMSSwitchPassword           string
-	UseStationRpiStops             bool
-	StationRpiSecret               string
+	UseStationRpiStops              bool
+	StationRpiSecret                string
 	RedSCCAddress                   string
 	BlueSCCAddress                  string
 	SCCUsername                     string
@@ -100,10 +100,6 @@ type EventSettings struct {
 	PauseDurationSec                int
 	TeleopDurationSec               int
 	WarningRemainingDurationSec     int
-	AutoBonusCoralThreshold         int
-	CoralBonusPerLevelThreshold     int
-	CoralBonusCoopEnabled           bool
-	BargeBonusPointThreshold        int
 }
 
 func (database *Database) GetEventSettings() (*EventSettings, error) {
@@ -132,10 +128,6 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		PauseDurationSec:            game.MatchTiming.PauseDurationSec,
 		TeleopDurationSec:           game.MatchTiming.TeleopDurationSec,
 		WarningRemainingDurationSec: game.MatchTiming.WarningRemainingDurationSec,
-		AutoBonusCoralThreshold:     game.AutoBonusCoralThreshold,
-		CoralBonusPerLevelThreshold: game.CoralBonusPerLevelThreshold,
-		CoralBonusCoopEnabled:       game.CoralBonusCoopEnabled,
-		BargeBonusPointThreshold:    game.BargeBonusPointThreshold,
 	}
 
 	if err := database.eventSettingsTable.create(&eventSettings); err != nil {

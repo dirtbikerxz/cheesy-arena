@@ -728,7 +728,7 @@ func createTbaScoringBreakdown(
 	// event settings.
 	breakdownMap := make(map[string]any)
 	_ = mapstructure.Decode(breakdown, &breakdownMap)
-	if !eventSettings.CoralBonusCoopEnabled {
+	if !game.CoralBonusCoopEnabled {
 		delete(breakdownMap, "coopertitionCriteriaMet")
 	}
 

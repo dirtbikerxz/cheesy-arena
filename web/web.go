@@ -208,6 +208,8 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("GET /setup/db/save", web.saveDbHandler)
 	mux.HandleFunc("GET /setup/displays", web.displaysGetHandler)
 	mux.HandleFunc("GET /setup/displays/websocket", web.displaysWebsocketHandler)
+	mux.HandleFunc("GET /setup/game_config", web.gameConfigGetHandler)
+	mux.HandleFunc("POST /setup/game_config", web.gameConfigPostHandler)
 	mux.HandleFunc("GET /setup/field_testing", web.fieldTestingGetHandler)
 	mux.HandleFunc("GET /setup/field_testing/websocket", web.fieldTestingWebsocketHandler)
 	mux.HandleFunc("GET /setup/judging", web.judgingGetHandler)
