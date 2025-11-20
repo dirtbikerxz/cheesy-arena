@@ -217,13 +217,8 @@ const handleMatchLoad = function (data) {
 };
 
 // Handles a websocket message to update the event status message.
-const handleEventStatus = function (data) {
-  if (data.CycleTime === "") {
-    $("#cycleTimeMessage").text("Last cycle time: Unknown");
-  } else {
-    $("#cycleTimeMessage").text("Last cycle time: " + data.CycleTime);
-  }
-  $("#earlyLateMessage").text(data.EarlyLateMessage);
+const handleEventStatus = function (_data) {
+  // Status row no longer displays cycle time / running late; ignore updates.
 };
 
 // Makes the team notes section editable and handles saving edits to the server.

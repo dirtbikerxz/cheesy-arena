@@ -34,7 +34,7 @@ body {
   align-items: center;
   justify-content: space-between;
   background-color: #333;
-  font-size: 1.5vw;
+  font-size: 1.3vw;
   text-transform: uppercase;
 }
 #matchStatusRow[data-ds="true"][data-preMatch="false"] {
@@ -58,21 +58,13 @@ body {
   display: flex;
   gap: 0.4vw;
 }
-.status-group #matchName {
-  min-width: 12vw;
-}
-.status-group #matchState,
-.status-group #matchTime {
-  min-width: 8vw;
-  text-align: right;
-}
 #eventStatusRow {
   height: 7%;
   display: flex;
   align-items: center;
-  justify-content: space-evenly;
+  justify-content: space-between;
   background-color: #333;
-  font-size: 1.5vw;
+  font-size: 1.6vw;
   text-transform: uppercase;
 }
 #eventStatusRow[data-ds="true"] {
@@ -80,6 +72,15 @@ body {
 }
 #eventStatusRow[data-fta="false"] {
   display: none;
+}
+.match-timer {
+  min-width: 12vw;
+  text-align: center;
+}
+.match-state {
+  min-width: 28vw;
+  text-align: center;
+  white-space: nowrap;
 }
 .left-position, .right-position {
   width: 6%;
