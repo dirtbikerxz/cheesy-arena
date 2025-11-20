@@ -155,6 +155,9 @@ func NewArena(dbPath string) (*Arena, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err = arena.loadDisplayConfigurations(); err != nil {
+		return nil, err
+	}
 
 	arena.ScoringPanelRegistry.initialize()
 
@@ -241,6 +244,24 @@ func (arena *Arena) LoadSettings() error {
 		return err
 	}
 
+	return nil
+}
+
+func (arena *Arena) loadDisplayConfigurations() error {
+	savedConfigs, err := arena.Database.GetAllDisplayConfigurations()
+	if err != nil {
+		return err
+	}
+
+	displayRegistryMutex.Lock()
+	for _, config := range savedConfigs {
+		arena.Displays[config.DisplayId] = newDisplayFromModelConfig(config)
+	}
+	displayRegistryMutex.Unlock()
+
+	if len(savedConfigs) > 0 {
+		arena.DisplayConfigurationNotifier.Notify()
+	}
 	return nil
 }
 

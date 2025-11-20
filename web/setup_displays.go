@@ -87,6 +87,16 @@ func (web *Web) displaysWebsocketHandler(w http.ResponseWriter, r *http.Request)
 			web.arena.ReloadDisplaysNotifier.NotifyWithMessage(displayId)
 		case "reloadAllDisplays":
 			web.arena.ReloadDisplaysNotifier.Notify()
+		case "removeDisplay":
+			displayId, ok := data.(string)
+			if !ok {
+				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				continue
+			}
+			if err := web.arena.RemoveDisplay(displayId); err != nil {
+				ws.WriteError(err.Error())
+				continue
+			}
 		default:
 			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 		}

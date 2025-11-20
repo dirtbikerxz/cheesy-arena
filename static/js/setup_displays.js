@@ -9,18 +9,25 @@ var fieldsChanged = false;
 
 var configureDisplay = function (displayId) {
   // Convert configuration string into map.
-  var configurationMap = {}
-  $.each($("#displayConfiguration" + displayId).val().split("&"), function (index, param) {
-    var keyValuePair = param.split("=");
-    configurationMap[keyValuePair[0]] = keyValuePair[1];
-  });
+  var configurationMap = {};
+  var rawConfig = $("#displayConfiguration" + displayId).val();
+  if (rawConfig.trim().length > 0) {
+    $.each(rawConfig.split("&"), function (index, param) {
+      if (!param) {
+        return;
+      }
+      var keyValuePair = param.split("=");
+      configurationMap[keyValuePair[0]] = keyValuePair[1];
+    });
+  }
 
   fieldsChanged = false;
   websocket.send("configureDisplay", {
     Id: displayId,
     Nickname: $("#displayNickname" + displayId).val(),
     Type: parseInt($("#displayType" + displayId).val()),
-    Configuration: configurationMap
+    Configuration: configurationMap,
+    Persistent: $("#displayPersistent" + displayId).is(":checked")
   });
 };
 
@@ -36,6 +43,43 @@ var reloadAllDisplays = function () {
   websocket.send("reloadAllDisplays");
 };
 
+var removeDisplay = function (displayId) {
+  if (!confirm("Remove persistent configuration for display " + displayId + "?")) {
+    return;
+  }
+  websocket.send("removeDisplay", displayId);
+};
+
+var addDisplay = function () {
+  var newId = $("#newDisplayId").val();
+  if (!newId) {
+    alert("Please provide a display ID.");
+    return;
+  }
+  var configurationMap = {};
+  var rawConfig = $("#newDisplayConfiguration").val();
+  if (rawConfig.trim().length > 0) {
+    $.each(rawConfig.split("&"), function (index, param) {
+      if (!param) {
+        return;
+      }
+      var keyValuePair = param.split("=");
+      configurationMap[keyValuePair[0]] = keyValuePair[1];
+    });
+  }
+  websocket.send("configureDisplay", {
+    Id: newId,
+    Nickname: $("#newDisplayNickname").val(),
+    Type: parseInt($("#newDisplayType").val()),
+    Configuration: configurationMap,
+    Persistent: $("#newDisplayPersistent").is(":checked")
+  });
+  $("#newDisplayId").val("");
+  $("#newDisplayNickname").val("");
+  $("#newDisplayConfiguration").val("");
+  $("#newDisplayPersistent").prop("checked", true);
+};
+
 // Register that an input element has been modified by the user to avoid overwriting with a server update.
 var markChanged = function (element) {
   fieldsChanged = true;
@@ -49,13 +93,19 @@ var handleDisplayConfiguration = function (data) {
     return;
   }
 
-  $("#displayContainer").empty();
+  $("#persistentDisplayContainer").empty();
+  $("#transientDisplayContainer").empty();
 
   $.each(data, function (displayId, display) {
     var displayRow = displayTemplate(display);
-    $("#displayContainer").append(displayRow);
+    if (display.DisplayConfiguration.Persistent) {
+      $("#persistentDisplayContainer").append(displayRow);
+    } else {
+      $("#transientDisplayContainer").append(displayRow);
+    }
     $("#displayNickname" + displayId).val(display.DisplayConfiguration.Nickname);
     $("#displayType" + displayId).val(display.DisplayConfiguration.Type);
+    $("#displayPersistent" + displayId).prop("checked", display.DisplayConfiguration.Persistent);
 
     // Convert configuration map to query string format.
     var configurationString = $.map(Object.entries(display.DisplayConfiguration.Configuration), function (entry) {

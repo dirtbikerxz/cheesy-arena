@@ -81,6 +81,7 @@ func TestDisplayRegisterUnregister(t *testing.T) {
 		Nickname:      "Placeholder",
 		Type:          PlaceholderDisplay,
 		Configuration: map[string]string{},
+		Persistent:    false,
 	}
 	arena.RegisterDisplay(displayConfig, "1.2.3.4")
 	if assert.Contains(t, arena.Displays, "254") {
@@ -120,6 +121,7 @@ func TestDisplayRegisterUnregister(t *testing.T) {
 		Nickname:      "Alliance",
 		Type:          AllianceStationDisplay,
 		Configuration: map[string]string{"station": "B2"},
+		Persistent:    true,
 	}
 	arena.UpdateDisplay(displayConfig4)
 	if assert.Contains(t, arena.Displays, "254") {
@@ -144,9 +146,8 @@ func TestDisplayUpdateError(t *testing.T) {
 
 	displayConfig := DisplayConfiguration{Id: "254", Configuration: map[string]string{}}
 	err := arena.UpdateDisplay(displayConfig)
-	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "doesn't exist")
-	}
+	assert.Nil(t, err)
+	assert.Contains(t, arena.Displays, "254")
 }
 
 func TestDisplayPurge(t *testing.T) {

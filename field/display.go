@@ -7,6 +7,7 @@ package field
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"net/url"
 	"reflect"
@@ -85,6 +86,7 @@ type DisplayConfiguration struct {
 	Nickname      string
 	Type          DisplayType
 	Configuration map[string]string
+	Persistent    bool
 }
 
 // Parses the given display URL path and query string to extract the configuration.
@@ -174,23 +176,34 @@ func (arena *Arena) RegisterDisplay(displayConfig *DisplayConfiguration, ipAddre
 	defer displayRegistryMutex.Unlock()
 
 	display, ok := arena.Displays[displayConfig.Id]
-	if ok && displayConfig.Type == PlaceholderDisplay {
-		// Don't rewrite the registered configuration if the new one is a placeholder -- if it is reconnecting after a
-		// restart, it should adopt the existing configuration.
-		arena.Displays[displayConfig.Id].ConnectionCount++
-		arena.Displays[displayConfig.Id].IpAddress = ipAddress
-	} else {
-		if !ok {
-			display = new(Display)
-			display.Notifier = websocket.NewNotifier(
-				"displayConfiguration", display.generateDisplayConfigurationMessage,
-			)
+	if !ok {
+		if savedConfig, err := arena.Database.GetDisplayConfiguration(displayConfig.Id); err == nil && savedConfig != nil {
+			display = newDisplayFromModelConfig(*savedConfig)
 			arena.Displays[displayConfig.Id] = display
+			ok = true
 		}
+	}
+	if ok {
+		display.ConnectionCount++
+		display.IpAddress = ipAddress
+		display.lastConnectedTime = time.Now()
+		// If this display is marked persistent, ignore any incoming configuration changes from the client.
+		if !display.DisplayConfiguration.Persistent && displayConfig.Type != PlaceholderDisplay {
+			display.DisplayConfiguration = *displayConfig
+			display.Notifier.Notify()
+		} else {
+			display.Notifier.Notify()
+		}
+	} else {
+		display = new(Display)
+		display.Notifier = websocket.NewNotifier(
+			"displayConfiguration", display.generateDisplayConfigurationMessage,
+		)
 		display.DisplayConfiguration = *displayConfig
 		display.IpAddress = ipAddress
 		display.ConnectionCount += 1
 		display.lastConnectedTime = time.Now()
+		arena.Displays[displayConfig.Id] = display
 		display.Notifier.Notify()
 	}
 	arena.DisplayConfigurationNotifier.Notify()
@@ -201,17 +214,42 @@ func (arena *Arena) RegisterDisplay(displayConfig *DisplayConfiguration, ipAddre
 // Updates the given display in the arena registry. Triggers a notification if the display configuration changed.
 func (arena *Arena) UpdateDisplay(displayConfig DisplayConfiguration) error {
 	displayRegistryMutex.Lock()
-	defer displayRegistryMutex.Unlock()
-
 	display, ok := arena.Displays[displayConfig.Id]
 	if !ok {
-		return fmt.Errorf("Display %s doesn't exist.", displayConfig.Id)
+		display = new(Display)
+		display.Notifier = websocket.NewNotifier(
+			"displayConfiguration", display.generateDisplayConfigurationMessage,
+		)
+		arena.Displays[displayConfig.Id] = display
 	}
-	if !reflect.DeepEqual(displayConfig, display.DisplayConfiguration) {
+	changed := !reflect.DeepEqual(displayConfig, display.DisplayConfiguration)
+	if changed {
 		display.DisplayConfiguration = displayConfig
 		display.Notifier.Notify()
 		arena.DisplayConfigurationNotifier.Notify()
 	}
+	displayRegistryMutex.Unlock()
+
+	if !changed {
+		return nil
+	}
+	if displayConfig.Persistent {
+		return arena.Database.SaveDisplayConfiguration(convertToModelDisplayConfig(displayConfig))
+	}
+	return arena.Database.DeleteDisplayConfiguration(displayConfig.Id)
+}
+
+// Removes a display's persistent configuration and marks it non-persistent in memory.
+func (arena *Arena) RemoveDisplay(displayId string) error {
+	displayRegistryMutex.Lock()
+	if display, ok := arena.Displays[displayId]; ok {
+		display.DisplayConfiguration.Persistent = false
+	}
+	displayRegistryMutex.Unlock()
+	if err := arena.Database.DeleteDisplayConfiguration(displayId); err != nil {
+		return err
+	}
+	arena.DisplayConfigurationNotifier.Notify()
 	return nil
 }
 
@@ -250,4 +288,35 @@ func (arena *Arena) purgeDisconnectedDisplays() {
 	if deleted {
 		arena.DisplayConfigurationNotifier.Notify()
 	}
+}
+
+func convertToModelDisplayConfig(displayConfig DisplayConfiguration) *model.DisplayConfiguration {
+	configCopy := make(map[string]string)
+	for key, value := range displayConfig.Configuration {
+		configCopy[key] = value
+	}
+	return &model.DisplayConfiguration{
+		DisplayId:     displayConfig.Id,
+		Nickname:      displayConfig.Nickname,
+		Type:          int(displayConfig.Type),
+		Configuration: configCopy,
+		Persistent:    displayConfig.Persistent,
+	}
+}
+
+func newDisplayFromModelConfig(modelConfig model.DisplayConfiguration) *Display {
+	display := new(Display)
+	display.Notifier = websocket.NewNotifier("displayConfiguration", display.generateDisplayConfigurationMessage)
+	display.DisplayConfiguration = DisplayConfiguration{
+		Id:            modelConfig.DisplayId,
+		Nickname:      modelConfig.Nickname,
+		Type:          DisplayType(modelConfig.Type),
+		Configuration: make(map[string]string),
+		Persistent:    modelConfig.Persistent,
+	}
+	for key, value := range modelConfig.Configuration {
+		display.DisplayConfiguration.Configuration[key] = value
+	}
+	display.lastConnectedTime = time.Now()
+	return display
 }

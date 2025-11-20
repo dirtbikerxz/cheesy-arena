@@ -25,6 +25,7 @@ type Database struct {
 	bolt                *bbolt.DB
 	allianceTable       *table[Alliance]
 	awardTable          *table[Award]
+	displayConfigurationTable *table[DisplayConfiguration]
 	eventSettingsTable  *table[EventSettings]
 	judgingSlotTable    *table[JudgingSlot]
 	lowerThirdTable     *table[LowerThird]
@@ -52,6 +53,9 @@ func OpenDatabase(filename string) (*Database, error) {
 		return nil, err
 	}
 	if database.awardTable, err = newTable[Award](&database); err != nil {
+		return nil, err
+	}
+	if database.displayConfigurationTable, err = newTable[DisplayConfiguration](&database); err != nil {
 		return nil, err
 	}
 	if database.eventSettingsTable, err = newTable[EventSettings](&database); err != nil {
