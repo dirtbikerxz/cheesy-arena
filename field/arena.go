@@ -184,6 +184,7 @@ func (arena *Arena) LoadSettings() error {
 		return err
 	}
 	arena.EventSettings = settings
+	network.ConfigureFieldNetworkAdapter(settings.FieldNetworkAdapter)
 
 	// Initialize the components that depend on settings.
 	arena.TeamSigns.Red1.SetId(settings.TeamSignRed1Id)

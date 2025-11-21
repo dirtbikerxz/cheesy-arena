@@ -226,6 +226,35 @@ UI for configuring event settings.
                 </div>
               </div>
               <div class="row mb-3">
+                <label class="col-lg-6 control-label">Field Network Adapter</label>
+                <div class="col-lg-6">
+                  <select class="form-select" name="fieldNetworkAdapter">
+                    <option value="" {{if eq .FieldNetworkAdapter ""}}selected{{end}}>
+                      Automatic (use system routing)
+                    </option>
+                    {{if .SelectedAdapterMissing}}
+                    <option value="{{.FieldNetworkAdapter}}" selected>
+                      Current selection unavailable ({{.FieldNetworkAdapter}})
+                    </option>
+                    {{end}}
+                    {{range .NetworkAdapters}}
+                    <option value="{{.Name}}" {{if eq $.FieldNetworkAdapter .Name}}selected{{end}}>
+                      {{.Name}} {{if .IPv4Address}}({{.IPv4Address}}){{end}}
+                    </option>
+                    {{end}}
+                  </select>
+                  <p class="help-block mt-1">
+                    {{if .SelectedAdapterMissing}}
+                    Selected adapter not found; Cheesy Arena will fall back to the default route.
+                    {{else if .SelectedAdapterIp}}
+                    Field device traffic will originate from {{.SelectedAdapterIp}}.
+                    {{else}}
+                    Choose an adapter to force field traffic off Wi-Fi/different NICs when multiple networks are active.
+                    {{end}}
+                  </p>
+                </div>
+              </div>
+              <div class="row mb-3">
                 <label class="col-lg-6 control-label">AP Address</label>
                 <div class="col-lg-6">
                   <input type="text" class="form-control" name="apAddress" value="{{.ApAddress}}" placeholder="10.0.100.2">

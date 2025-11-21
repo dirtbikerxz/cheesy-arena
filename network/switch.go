@@ -10,7 +10,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
-	"net"
 	"sync"
 	"time"
 )
@@ -40,8 +39,6 @@ type Switch struct {
 	configPauseDuration   time.Duration
 	Status                string
 }
-
-var ServerIpAddress = "10.0.100.5" // The DS will try to connect to this address only.
 
 func NewSwitch(address, password string) *Switch {
 	return &Switch{
@@ -128,7 +125,7 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 // returns it as a string.
 func (sw *Switch) runCommand(command string) (string, error) {
 	// Open a Telnet connection to the switch.
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", sw.address, sw.port))
+	conn, err := DialFieldNetwork("tcp", fmt.Sprintf("%s:%d", sw.address, sw.port))
 	if err != nil {
 		return "", err
 	}

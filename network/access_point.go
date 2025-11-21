@@ -142,7 +142,7 @@ func (ap *AccessPoint) ConfigureTeamWifi(teams [6]*model.Team) error {
 	if ap.password != "" {
 		httpRequest.Header.Add("Authorization", fmt.Sprintf("Bearer %s", ap.password))
 	}
-	httpClient := http.Client{Timeout: time.Second * 3}
+	httpClient := FieldHttpClient(time.Second * 3)
 	httpResponse, err := httpClient.Do(httpRequest)
 	if err != nil {
 		return err
@@ -172,7 +172,7 @@ func (ap *AccessPoint) updateMonitoring() error {
 	if ap.password != "" {
 		httpRequest.Header.Add("Authorization", fmt.Sprintf("Bearer %s", ap.password))
 	}
-	var httpClient http.Client
+	httpClient := FieldHttpClient(0)
 	httpResponse, err := httpClient.Do(httpRequest)
 	if err != nil {
 		ap.Status = "ERROR"

@@ -7,8 +7,8 @@ package partner
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/network"
 	"log"
-	"net"
 	"strings"
 	"time"
 )
@@ -49,7 +49,7 @@ func (client *BlackmagicClient) StopRecording() {
 // Connects to all devices and executes the given command.
 func (client *BlackmagicClient) sendCommand(command string) {
 	for _, address := range client.deviceAddresses {
-		conn, err := net.DialTimeout(
+		conn, err := network.DialFieldNetworkTimeout(
 			"tcp", fmt.Sprintf("%s:%d", address, blackmagicPort), blackmagicConnectTimeoutMs*time.Millisecond,
 		)
 		if err != nil {

@@ -87,10 +87,18 @@ func (scc *SCCSwitch) runCommandSequence(commands []string) (string, error) {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // Allow any host key for simplicity
 		Timeout:         scc.connectTimeoutDuration,
 	}
-	client, err := ssh.Dial("tcp", net.JoinHostPort(scc.address, strconv.Itoa(scc.port)), sshConfig)
+	address := net.JoinHostPort(scc.address, strconv.Itoa(scc.port))
+	conn, err := DialFieldNetwork("tcp", address)
 	if err != nil {
 		return "", fmt.Errorf("failed to connect to SSH: %w", err)
 	}
+	defer conn.Close()
+
+	sshConn, chans, reqs, err := ssh.NewClientConn(conn, address, sshConfig)
+	if err != nil {
+		return "", fmt.Errorf("failed to start SSH session: %w", err)
+	}
+	client := ssh.NewClient(sshConn, chans, reqs)
 	defer client.Close()
 
 	// Create an interactive session to run commands

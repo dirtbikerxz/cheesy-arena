@@ -119,7 +119,7 @@ func (TPLS *TPLinkSwitch) updateMonitoring() error {
 // isReachableTCP80 does a quick TCP dial to port 80.
 func (TPLS *TPLinkSwitch) isReachableTCP80(timeout time.Duration) bool {
 	addr := TPLS.address + ":80"
-	d := net.Dialer{Timeout: timeout}
+	d := net.Dialer{Timeout: timeout, LocalAddr: getLocalAddrForNetwork("tcp")}
 	conn, err := d.Dial("tcp", addr)
 	if err != nil {
 		return false
@@ -132,7 +132,8 @@ func (TPLS *TPLinkSwitch) isReachableTCP80(timeout time.Duration) bool {
 
 func rebootWithLogin(TPLS *TPLinkSwitch) error {
 	jar, _ := cookiejar.New(nil)
-	client := &http.Client{Jar: jar, Timeout: 2 * time.Second}
+	client := FieldHttpClient(2 * time.Second)
+	client.Jar = jar
 
 	if err := getRoot(client, TPLS); err != nil {
 		return fmt.Errorf("prefetch root: %w", err)

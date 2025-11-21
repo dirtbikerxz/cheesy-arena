@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/network"
 	"image/color"
 	"log"
 	"net"
@@ -144,7 +145,7 @@ func (sign *TeamSign) SetId(id int) {
 	ipAddress := fmt.Sprintf("%s%d", teamSignAddressPrefix, id)
 
 	var err error
-	sign.udpConn, err = net.Dial("udp4", fmt.Sprintf("%s:%d", ipAddress, teamSignPort))
+	sign.udpConn, err = network.DialFieldNetwork("udp4", fmt.Sprintf("%s:%d", ipAddress, teamSignPort))
 	if err != nil {
 		log.Printf("Failed to connect to team sign at %s: %v", ipAddress, err)
 		return

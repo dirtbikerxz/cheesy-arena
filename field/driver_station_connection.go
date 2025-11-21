@@ -79,7 +79,7 @@ func newDriverStationConnection(
 		udpSendPort = driverStationUdpSendPortLite
 	}
 
-	udpConn, err := net.Dial("udp4", fmt.Sprintf("%s:%d", ipAddress, udpSendPort))
+	udpConn, err := network.DialFieldNetwork("udp4", fmt.Sprintf("%s:%d", ipAddress, udpSendPort))
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,11 @@ func newDriverStationConnection(
 
 // Loops indefinitely to read packets and update connection status.
 func (arena *Arena) listenForDsUdpPackets() {
-	udpAddress, _ := net.ResolveUDPAddr("udp4", fmt.Sprintf(":%d", driverStationUdpReceivePort))
+	listenAddress := fmt.Sprintf(":%d", driverStationUdpReceivePort)
+	if ip := network.FieldAdapterIP(); ip != nil {
+		listenAddress = fmt.Sprintf("%s:%d", ip.String(), driverStationUdpReceivePort)
+	}
+	udpAddress, _ := net.ResolveUDPAddr("udp4", listenAddress)
 	listener, err := net.ListenUDP("udp4", udpAddress)
 	if err != nil {
 		log.Fatalf("Error opening driver station UDP socket: %v", err)

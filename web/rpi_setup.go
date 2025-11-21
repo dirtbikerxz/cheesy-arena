@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/Team254/cheesy-arena/field"
+	"github.com/Team254/cheesy-arena/network"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -96,7 +97,11 @@ func (j *rpiStopsJob) setLast(p rpiStopsPageData) { j.mu.Lock(); j.last = p; j.m
 var rpiGlobal rpiJob
 var rpiStopsGlobal rpiStopsJob
 
-const defaultStationRpiApiHost = "http://10.0.100.5:8080"
+const defaultStationRpiPort = 8080
+
+func defaultStationRpiApiHost() string {
+	return fmt.Sprintf("http://%s:%d", network.ServerIpAddress, defaultStationRpiPort)
+}
 
 // ===== Handlers =====
 
@@ -335,7 +340,7 @@ func (web *Web) rpiStopsGetHandler(w http.ResponseWriter, r *http.Request) {
 		last.SSHPass = "1234Five"
 	}
 	if last.ApiHost == "" {
-		last.ApiHost = defaultStationRpiApiHost
+		last.ApiHost = defaultStationRpiApiHost()
 	}
 	if last.Host == "" {
 		last.Host = "10.0.100.199"
@@ -406,7 +411,7 @@ func (web *Web) rpiStopsRunPostHandler(w http.ResponseWriter, r *http.Request) {
 		form.SSHPass = "1234Five"
 	}
 	if form.ApiHost == "" {
-		form.ApiHost = defaultStationRpiApiHost
+		form.ApiHost = defaultStationRpiApiHost()
 	}
 	form.ApiHost = strings.TrimSuffix(form.ApiHost, "/")
 	if form.Host == "" {
@@ -665,7 +670,7 @@ func scanSubnetForSSH(cidr string) ([]string, error) {
 		go func() {
 			defer func() { <-sem }()
 			addr := net.JoinHostPort(ip.String(), "22")
-			c, err := net.DialTimeout("tcp", addr, 2*time.Second)
+			c, err := network.DialFieldNetworkTimeout("tcp", addr, 2*time.Second)
 			if err == nil {
 				_ = c.Close()
 				out <- result{ip: ip.String(), ok: true}
@@ -695,6 +700,20 @@ func incIP(ip net.IP) net.IP {
 	return res
 }
 
+func dialFieldSSH(host string, cfg *ssh.ClientConfig) (*ssh.Client, error) {
+	address := net.JoinHostPort(host, "22")
+	conn, err := network.DialFieldNetworkTimeout("tcp", address, cfg.Timeout)
+	if err != nil {
+		return nil, fmt.Errorf("ssh dial: %w", err)
+	}
+
+	sshConn, chans, reqs, err := ssh.NewClientConn(conn, address, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("ssh client: %w", err)
+	}
+	return ssh.NewClient(sshConn, chans, reqs), nil
+}
+
 // ===== SSH + remote script bootstrap =====
 
 // configurePi uploads the rendered script and launches it as *root* on the remote Pi,
@@ -706,9 +725,9 @@ func configurePi(host, user, pass, url, staticCIDR, gw, dns string, job *rpiJob)
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         4 * time.Second,
 	}
-	conn, err := ssh.Dial("tcp", net.JoinHostPort(host, "22"), cfg)
+	conn, err := dialFieldSSH(host, cfg)
 	if err != nil {
-		return fmt.Errorf("ssh dial: %w", err)
+		return err
 	}
 	defer conn.Close()
 
@@ -790,20 +809,20 @@ func configureStopsPi(host, user, pass, apiURL, staticCIDR, gw, dns, stationId, 
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         4 * time.Second,
 	}
-	conn, err := ssh.Dial("tcp", net.JoinHostPort(host, "22"), cfg)
+	conn, err := dialFieldSSH(host, cfg)
 	if err != nil {
-		return fmt.Errorf("ssh dial: %w", err)
+		return err
 	}
 	defer conn.Close()
 
 	script, err := renderRpiStopsScript(RpiStopsParams{
-		User:      user,
-		ApiUrl:    apiURL,
-		StationId: stationId,
-		Secret:    secret,
+		User:       user,
+		ApiUrl:     apiURL,
+		StationId:  stationId,
+		Secret:     secret,
 		StaticCidr: staticCIDR,
-		Gateway:   gw,
-		Dns:       dns,
+		Gateway:    gw,
+		Dns:        dns,
 	})
 	if err != nil {
 		return fmt.Errorf("render script: %w", err)

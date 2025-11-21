@@ -53,6 +53,7 @@ type EventSettings struct {
 	TbaSecret                       string
 	NexusEnabled                    bool
 	NetworkSecurityEnabled          bool
+	FieldNetworkAdapter             string
 	ApAddress                       string
 	ApPassword                      string
 	ApChannel                       int
@@ -120,6 +121,7 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		SelectionRound3Order:        "",
 		SelectionShowUnpickedTeams:  true,
 		TbaDownloadEnabled:          true,
+		FieldNetworkAdapter:         "",
 		ApChannel:                   36,
 		SCCUpCommands:               strings.Join(sccDefaultUpCommands, "\n"),
 		SCCDownCommands:             strings.Join(sccDefaultDownCommands, "\n"),

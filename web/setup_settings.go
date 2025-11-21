@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/network"
 )
 
 // Shows the event settings editing page.
@@ -81,6 +82,7 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.TbaSecret = r.PostFormValue("tbaSecret")
 	eventSettings.NexusEnabled = r.PostFormValue("nexusEnabled") == "on"
 	eventSettings.NetworkSecurityEnabled = r.PostFormValue("networkSecurityEnabled") == "on"
+	eventSettings.FieldNetworkAdapter = strings.TrimSpace(r.PostFormValue("fieldNetworkAdapter"))
 	eventSettings.ApAddress = r.PostFormValue("apAddress")
 	eventSettings.ApPassword = r.PostFormValue("apPassword")
 	eventSettings.ApChannel, _ = strconv.Atoi(r.PostFormValue("apChannel"))
@@ -396,6 +398,20 @@ func (web *Web) settingsPublishTeamsHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (web *Web) renderSettings(w http.ResponseWriter, r *http.Request, errorMessage string) {
+	adapters, adapterErr := network.ListNetworkAdapters()
+	if adapterErr != nil && errorMessage == "" {
+		errorMessage = fmt.Sprintf("Failed to read network adapters: %v", adapterErr)
+	}
+	selectedAdapterIp := ""
+	selectedAdapterMissing := false
+	if web.arena.EventSettings.FieldNetworkAdapter != "" {
+		if ip, err := network.ResolveAdapterIPv4(web.arena.EventSettings.FieldNetworkAdapter); err != nil {
+			selectedAdapterMissing = true
+		} else if ip != nil {
+			selectedAdapterIp = ip.String()
+		}
+	}
+
 	template, err := web.parseFiles("templates/setup_settings.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
@@ -403,8 +419,11 @@ func (web *Web) renderSettings(w http.ResponseWriter, r *http.Request, errorMess
 	}
 	data := struct {
 		*model.EventSettings
-		ErrorMessage string
-	}{web.arena.EventSettings, errorMessage}
+		ErrorMessage           string
+		NetworkAdapters        []network.NetworkAdapter
+		SelectedAdapterIp      string
+		SelectedAdapterMissing bool
+	}{web.arena.EventSettings, errorMessage, adapters, selectedAdapterIp, selectedAdapterMissing}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)

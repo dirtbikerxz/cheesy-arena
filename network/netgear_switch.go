@@ -185,7 +185,7 @@ func (s *NetgearPlusSwitch) waitUntilReachable(budget time.Duration) bool {
 }
 
 func (s *NetgearPlusSwitch) rebootWithLogin() error {
-	client := &http.Client{Timeout: httpTimeout}
+	client := FieldHttpClient(httpTimeout)
 
 	// Light browser warmup + initial SID (some builds expect a SID cookie early).
 	_, _ = s.fetchPage(client, s.loginURL, s.rootURL)
