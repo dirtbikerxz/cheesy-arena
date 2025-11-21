@@ -39,9 +39,14 @@ const initWidgets = () => {
         btn.addEventListener("click", (e) => {
           e.preventDefault();
           e.stopPropagation();
+          const alreadyActive = btn.classList.contains("active");
           el.querySelectorAll(".widget-state").forEach((b) => b.classList.remove("active"));
-          btn.classList.add("active");
-          sendWidget(widget.id, { state: btn.dataset.state });
+          if (alreadyActive) {
+            sendWidget(widget.id, { state: "" });
+          } else {
+            btn.classList.add("active");
+            sendWidget(widget.id, { state: btn.dataset.state });
+          }
         });
       });
     } else if (widget.type === "foul") {
@@ -49,13 +54,6 @@ const initWidgets = () => {
         addFoul(alliance === "blue" ? "red" : "blue", false);
       });
     }
-
-    el.addEventListener("click", () => {
-      el.classList.add("selected");
-      Object.values(state.widgets).forEach((w) => {
-        if (w.id !== widget.id) w.el.classList.remove("selected");
-      });
-    });
   });
 };
 

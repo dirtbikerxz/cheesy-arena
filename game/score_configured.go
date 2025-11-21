@@ -47,12 +47,27 @@ func (score *Score) summarizeFromConfig(opponentScore *Score) *ScoreSummary {
 
 	for widgetId, state := range score.GenericStates {
 		if widget := ActiveGameConfig.WidgetById(widgetId); widget != nil {
-			if points, ok := widget.StatePoints[state]; ok {
-				if widget.ScoringId != "" {
-					scoringCounts[widget.ScoringId]++
-					summary.MatchPoints += points
-				} else {
-					summary.MatchPoints += points
+			if state == "" {
+				continue
+			}
+			// Determine scoring for this selected state.
+			if widget.Type == "multistate" {
+				for _, st := range widget.States {
+					if st.Value == state {
+						if st.ScoringId != "" {
+							scoringCounts[st.ScoringId]++
+						}
+						break
+					}
+				}
+			} else {
+				if points, ok := widget.StatePoints[state]; ok {
+					if widget.ScoringId != "" {
+						scoringCounts[widget.ScoringId]++
+						summary.MatchPoints += points
+					} else {
+						summary.MatchPoints += points
+					}
 				}
 			}
 		}

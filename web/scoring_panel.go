@@ -196,8 +196,10 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			case "multistate":
 				if args.State != "" {
 					score.GenericStates[widget.Id] = args.State
-					scoreChanged = true
+				} else {
+					delete(score.GenericStates, widget.Id)
 				}
+				scoreChanged = true
 			}
 		}
 

@@ -734,18 +734,18 @@ dialog::backdrop {
 
 .widget-card .team-button {
   width: 100%;
-  min-height: 120px;
 }
 
 .widget-toggle {
   border: 2px solid transparent;
-  background: linear-gradient(145deg, #1b2332, #0f172a);
-  color: #f8fafc;
+  background: linear-gradient(135deg, var(--alliance-action), var(--alliance-highlight));
+  color: #fff;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
   transition: border-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 20px 0;
 }
 
 .widget-toggle.active {
@@ -777,7 +777,7 @@ dialog::backdrop {
 }
 
 .widget-state.active {
-  outline: 3px solid var(--alliance-action);
+  outline: none;
   border-color: var(--alliance-action);
   transform: translateY(-2px);
   background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
@@ -803,20 +803,14 @@ dialog::backdrop {
 
 /* Overrides for toggle/multistate visuals */
 .widget-card .widget-toggle {
-  background: #1b2231;
-}
-.widget-card .widget-state {
-  background: #1f2736;
-}
-
-.widget-card .widget-toggle {
   width: 100%;
-  min-height: 120px;
+  min-height: 100px;
+  height: 100%;
   border-radius: 16px;
   border: 2px solid transparent;
-  background: radial-gradient(circle at 30% 30%, #243349, #111827 65%);
-  color: #f8fafc;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(135deg, var(--alliance-action), var(--alliance-highlight));
+  color: #fff;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35);
   transition: border-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
@@ -847,10 +841,10 @@ dialog::backdrop {
   min-height: 70px;
   font-size: 15pt;
   padding: 16px 18px;
-  background: radial-gradient(circle at 30% 30%, #222c3b, #0f1724 65%);
+  background: linear-gradient(135deg, #30363f, #1d2430);
   color: #f8fafc;
-  border: 1px solid #414b5f;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  border: 1px solid #3e4454;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
   transition: all 0.15s ease;
   display: flex;
   flex-direction: column;
