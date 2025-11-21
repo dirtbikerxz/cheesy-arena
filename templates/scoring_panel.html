@@ -52,11 +52,13 @@ Dynamic scoring panel rendered from the game configuration builder, keeping the 
           </div>
           <div class="team-text">Off</div>
         </button>
-        {{else if eq .Type "multistate"}}
+        {{else if and (eq .Type "multistate") .States}}
         <div class="state-row">
-          <button class="endgame-input-button widget-state" data-state="on">
-            Select
+          {{range .States}}
+          <button class="endgame-input-button widget-state" data-state="{{.Value}}">
+            {{.Label}} {{with index $.ScoringPoints .ScoringId}}({{.}} pts){{end}}
           </button>
+          {{end}}
         </div>
         {{else if eq .Type "foul"}}
         <button class="endgame-input-button widget-foul">Add Foul</button>

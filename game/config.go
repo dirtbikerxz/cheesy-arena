@@ -33,6 +33,7 @@ type WidgetConfig struct {
 	Color       string         `json:"color"`
 	ScoringId   string         `json:"scoringId"`
 	Position    GridPosition   `json:"position"`
+	States      []WidgetState  `json:"states"`
 	StatePoints map[string]int `json:"-"`
 	PointValue  int            `json:"-"`
 }
@@ -60,6 +61,12 @@ type GridPosition struct {
 	ColSpan int `json:"colSpan"`
 }
 
+type WidgetState struct {
+	Label     string `json:"label"`
+	Value     string `json:"value"`
+	ScoringId string `json:"scoringId"`
+}
+
 // SetActiveGameConfig parses the JSON payload and stores the result for runtime use.
 func SetActiveGameConfig(payload string) error {
 	definition, err := ParseGameConfig(payload)
@@ -82,6 +89,12 @@ func ParseGameConfig(payload string) (*GameConfigDefinition, error) {
 				parsePoints(cfg.Panels[i].Widgets[j].Points)
 			if cfg.Panels[i].Widgets[j].Id == "" {
 				cfg.Panels[i].Widgets[j].Id = fmt.Sprintf("%s_%d", cfg.Panels[i].Id, j)
+			}
+			if cfg.Panels[i].Widgets[j].Type == "multistate" && len(cfg.Panels[i].Widgets[j].States) == 0 {
+				cfg.Panels[i].Widgets[j].States = []WidgetState{
+					{Label: "State 1", Value: "state_1", ScoringId: ""},
+					{Label: "State 2", Value: "state_2", ScoringId: ""},
+				}
 			}
 		}
 	}

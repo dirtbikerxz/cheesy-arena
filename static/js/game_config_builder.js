@@ -125,6 +125,15 @@ class GameConfigBuilder {
     };
     if (type === "section") {
       widget.color = "#555";
+      widget.scoringId = "";
+      widget.states = [];
+    }
+    if (type === "multistate") {
+      widget.states = [
+        { label: "State 1", value: "state_1", scoringId: "" },
+        { label: "State 2", value: "state_2", scoringId: "" },
+      ];
+      widget.scoringId = "";
     }
     panel.widgets.push(widget);
     this.renderPanel();
@@ -216,6 +225,17 @@ class GameConfigBuilder {
     document.getElementById("propRow").value = widget.position?.row || 1;
     document.getElementById("propCol").value = widget.position?.col || 1;
     document.getElementById("propColSpan").value = widget.position?.colSpan || 1;
+    const stateEditor = document.getElementById("stateEditor");
+    const scoringRow = document.getElementById("scoringSelectorRow");
+    if (stateEditor) {
+      stateEditor.classList.toggle("d-none", widget.type !== "multistate");
+      if (widget.type === "multistate") {
+        this.renderStateList(widget);
+      }
+    }
+    if (scoringRow) {
+      scoringRow.classList.toggle("d-none", widget.type === "multistate" || widget.type === "section");
+    }
     this.populateScoringSelect(widget.scoringId);
   }
 
@@ -252,6 +272,60 @@ class GameConfigBuilder {
       const widget = this.getSelectedWidget();
       if (widget) widget.scoringId = id;
     }
+  }
+
+  addState() {
+    const widget = this.getSelectedWidget();
+    if (!widget || widget.type !== "multistate") return;
+    widget.states = widget.states || [];
+    widget.states.push({ value: `state_${widget.states.length + 1}`, label: "State", scoringId: "" });
+    this.renderStateList(widget);
+  }
+
+  renderStateList(widget) {
+    const container = document.getElementById("stateList");
+    if (!container) return;
+    container.innerHTML = "";
+    widget.states = widget.states || [];
+    widget.states.forEach((state, idx) => {
+      const row = document.createElement("div");
+      row.className = "d-flex align-items-center gap-2 mb-2";
+      row.innerHTML = `
+        <input class="form-control form-control-sm bg-body" value="${state.label}" data-idx="${idx}" data-field="label" placeholder="Label">
+        <input class="form-control form-control-sm bg-body" value="${state.value}" data-idx="${idx}" data-field="value" placeholder="Value">
+        <select class="form-select form-select-sm bg-body" data-idx="${idx}" data-field="scoringId"></select>
+        <button class="btn btn-sm btn-outline-danger" data-remove="${idx}">X</button>
+      `;
+      container.appendChild(row);
+    });
+    container.querySelectorAll("input").forEach((input) => {
+      input.addEventListener("input", (e) => {
+        const idx = parseInt(e.target.dataset.idx, 10);
+        const field = e.target.dataset.field;
+        widget.states[idx][field] = e.target.value;
+      });
+    });
+    container.querySelectorAll("select").forEach((select) => {
+      const idx = parseInt(select.dataset.idx, 10);
+      select.innerHTML = '<option value="">None</option>';
+      this.scoring.forEach((s) => {
+        const opt = document.createElement("option");
+        opt.value = s.id;
+        opt.textContent = `${s.label} (${s.pointValue} pts)`;
+        if (s.id === widget.states[idx].scoringId) opt.selected = true;
+        select.appendChild(opt);
+      });
+      select.addEventListener("change", (e) => {
+        widget.states[idx].scoringId = e.target.value;
+      });
+    });
+    container.querySelectorAll("button[data-remove]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.remove, 10);
+        widget.states.splice(idx, 1);
+        this.renderStateList(widget);
+      });
+    });
   }
 
   renderScoringList() {

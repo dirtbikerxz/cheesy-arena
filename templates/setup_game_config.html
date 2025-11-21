@@ -34,15 +34,13 @@ Game configuration builder for defining panels and scoring inputs without game-s
       </div>
       <div class="row">
         <div class="col-lg-4 mb-3">
-          <div class="palette card card-body bg-body h-100">
-            <h6 class="text-uppercase mb-2">Palette</h6>
-            <p class="text-muted small mb-2">Drag to canvas</p>
-            <div class="palette-item" draggable="true" data-type="counter">Counter</div>
-            <div class="palette-item" draggable="true" data-type="toggle">Toggle</div>
-            <div class="palette-item" draggable="true" data-type="multistate">Multi-State</div>
-            <div class="palette-item" draggable="true" data-type="text">Label</div>
-            <div class="palette-item" draggable="true" data-type="foul">Foul Button</div>
-            <div class="palette-item" draggable="true" data-type="section">Section Header</div>
+            <div class="palette card card-body bg-body h-100">
+              <h6 class="text-uppercase mb-2">Palette</h6>
+              <p class="text-muted small mb-2">Drag to canvas</p>
+              <div class="palette-item" draggable="true" data-type="counter">Counter</div>
+              <div class="palette-item" draggable="true" data-type="toggle">Toggle</div>
+              <div class="palette-item" draggable="true" data-type="multistate">Multi-State</div>
+              <div class="palette-item" draggable="true" data-type="section">Section Header</div>
           </div>
         </div>
         <div class="col-lg-5 mb-3">
@@ -71,9 +69,17 @@ Game configuration builder for defining panels and scoring inputs without game-s
                 <label class="form-label form-label-sm">Identifier</label>
                 <input type="text" id="propId" class="form-control form-control-sm bg-body">
               </div>
-              <div class="mb-2">
+              <div class="mb-2" id="scoringSelectorRow">
                 <label class="form-label form-label-sm">Scoring Element</label>
                 <select id="propScoring" class="form-select form-select-sm bg-body"></select>
+              </div>
+              <div class="mb-3 d-none" id="stateEditor">
+                <div class="d-flex align-items-center justify-content-between">
+                  <label class="form-label form-label-sm mb-0">States</label>
+                  <button type="button" class="btn btn-sm btn-outline-primary" onclick="builder.addState();">Add State</button>
+                </div>
+                <div class="small text-muted mb-1">Use for multi-state widgets (e.g. endgame levels).</div>
+                <div id="stateList" class="state-list"></div>
               </div>
               <div class="mb-2">
                 <label class="form-label form-label-sm">Phase</label>

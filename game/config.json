@@ -144,19 +144,24 @@
             "col": 2,
             "colSpan": 1
           },
-          "scoringId": "score_1763678516955"
-        },
-        {
-          "id": "foul_1763685450475",
-          "type": "foul",
-          "label": "Foul",
-          "phase": "any",
-          "color": "#22d3ee",
-          "position": {
-            "row": 4,
-            "col": 3,
-            "colSpan": 1
-          }
+          "scoringId": "",
+          "states": [
+            {
+              "value": "state_1",
+              "label": "Parked",
+              "scoringId": "score_1763678516955"
+            },
+            {
+              "value": "state_2",
+              "label": "High",
+              "scoringId": "score_1763685107712"
+            },
+            {
+              "value": "state_3",
+              "label": "Low",
+              "scoringId": "score_1763685107998"
+            }
+          ]
         }
       ]
     },

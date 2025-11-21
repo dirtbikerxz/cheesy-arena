@@ -748,7 +748,7 @@ dialog::backdrop {
 .widget-section {
   font-weight: bold;
   font-size: 18pt;
-  text-align: left;
+  text-align: center;
   padding: 6px 0;
   border-bottom: 1px solid var(--interaction-highlight);
 }
