@@ -30,10 +30,15 @@ const initWidgets = () => {
       el.querySelector(".widget-inc")?.addEventListener("click", () => sendWidget(widget.id, { delta: 1 }));
       el.querySelector(".widget-dec")?.addEventListener("click", () => sendWidget(widget.id, { delta: -1 }));
     } else if (widget.type === "toggle") {
-      el.querySelector(".widget-toggle")?.addEventListener("click", () => sendWidget(widget.id, { action: "toggle" }));
+      el.querySelector(".widget-toggle")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        sendWidget(widget.id, { action: "toggle" });
+      });
     } else if (widget.type === "multistate") {
       el.querySelectorAll(".widget-state").forEach((btn) => {
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
           el.querySelectorAll(".widget-state").forEach((b) => b.classList.remove("active"));
           btn.classList.add("active");
           sendWidget(widget.id, { state: btn.dataset.state });
@@ -124,14 +129,15 @@ const handleRealtimeScore = (data) => {
   Object.entries(score.GenericToggles || {}).forEach(([id, val]) => {
     const btn = document.querySelector(`[data-widget-id="${id}"] .widget-toggle`);
     if (btn) {
-      btn.textContent = val ? "On" : "Off";
       btn.classList.toggle("active", !!val);
     }
   });
   // Multistate
   Object.entries(score.GenericStates || {}).forEach(([id, state]) => {
     document.querySelectorAll(`[data-widget-id="${id}"] .widget-state`).forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.state === state);
+      const isActive = btn.dataset.state === state;
+      btn.classList.toggle("active", isActive);
+      btn.setAttribute("aria-pressed", isActive);
     });
   });
 };

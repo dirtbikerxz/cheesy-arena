@@ -728,12 +728,60 @@ dialog::backdrop {
 
 .state-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
 }
 
 .widget-card .team-button {
   width: 100%;
+  min-height: 120px;
+}
+
+.widget-toggle {
+  border: 2px solid transparent;
+  background: linear-gradient(145deg, #1b2332, #0f172a);
+  color: #f8fafc;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.widget-toggle.active {
+  border-color: var(--alliance-action);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  transform: translateY(-1px);
+}
+
+.toggle-points {
+  font-size: 26pt;
+  padding: 24px 0;
+  letter-spacing: 0.5px;
+}
+
+.widget-state {
+  min-height: 68px;
+  font-size: 15pt;
+  padding: 16px 18px;
+  background: linear-gradient(145deg, #1c2230, #0f1724);
+  color: #f8fafc;
+  border: 1px solid #414b5f;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.widget-state.active {
+  outline: 3px solid var(--alliance-action);
+  border-color: var(--alliance-action);
+  transform: translateY(-2px);
+  background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.45);
 }
 
 .empty-panel {
@@ -751,4 +799,80 @@ dialog::backdrop {
   text-align: center;
   padding: 6px 0;
   border-bottom: 1px solid var(--interaction-highlight);
+}
+
+/* Overrides for toggle/multistate visuals */
+.widget-card .widget-toggle {
+  background: #1b2231;
+}
+.widget-card .widget-state {
+  background: #1f2736;
+}
+
+.widget-card .widget-toggle {
+  width: 100%;
+  min-height: 120px;
+  border-radius: 16px;
+  border: 2px solid transparent;
+  background: radial-gradient(circle at 30% 30%, #243349, #111827 65%);
+  color: #f8fafc;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.widget-card .widget-toggle:disabled {
+  opacity: 0.45;
+}
+.widget-card .widget-toggle.active {
+  border-color: var(--alliance-action);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  transform: translateY(-1px);
+}
+.widget-card .toggle-points {
+  font-size: 26pt;
+  padding: 24px 0;
+  letter-spacing: 0.5px;
+}
+
+.state-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+.widget-card .widget-state {
+  width: 100%;
+  min-height: 70px;
+  font-size: 15pt;
+  padding: 16px 18px;
+  background: radial-gradient(circle at 30% 30%, #222c3b, #0f1724 65%);
+  color: #f8fafc;
+  border: 1px solid #414b5f;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+}
+.widget-card .widget-state .state-label {
+  font-weight: 600;
+}
+.widget-card .widget-state .state-points {
+  font-size: 13pt;
+  opacity: 0.9;
+}
+.widget-card .widget-state.active {
+  outline: 3px solid var(--alliance-action);
+  border-color: var(--alliance-action);
+  transform: translateY(-2px);
+  background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.45);
+}
+.widget-card .widget-state:not(:disabled):hover {
+  border-color: var(--alliance-action);
 }

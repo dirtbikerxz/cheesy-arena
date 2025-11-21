@@ -28,7 +28,7 @@ Dynamic scoring panel rendered from the game configuration builder, keeping the 
         </div>
         {{if eq .Type "counter"}}
         <div class="counter">
-          <button class="counter-decrement scoring-button widget-dec">-1</button>
+          <button type="button" class="counter-decrement scoring-button widget-dec">-1</button>
           <div class="counter-status">
             <div class="counter-main-value widget-value">0</div>
             <div class="counter-label">
@@ -39,24 +39,24 @@ Dynamic scoring panel rendered from the game configuration builder, keeping the 
               {{end}}
             </div>
           </div>
-          <button class="counter-increment scoring-button widget-inc">+1</button>
+          <button type="button" class="counter-increment scoring-button widget-inc">+1</button>
         </div>
         {{else if eq .Type "toggle"}}
-        <button class="team-button widget-toggle">
-          <div class="team-num">
+        <button type="button" class="widget-toggle">
+          <span class="toggle-points">
             {{if .ScoringId}}
               {{with index $.ScoringPoints .ScoringId}}{{.}} pts{{end}}
             {{else}}
               {{.PointValue}} pts
             {{end}}
-          </div>
-          <div class="team-text">Off</div>
+          </span>
         </button>
         {{else if and (eq .Type "multistate") .States}}
         <div class="state-row">
           {{range .States}}
-          <button class="endgame-input-button widget-state" data-state="{{.Value}}">
-            {{.Label}} {{with index $.ScoringPoints .ScoringId}}({{.}} pts){{end}}
+          <button type="button" class="widget-state" data-state="{{.Value}}">
+            <div class="state-label">{{.Label}}</div>
+            <div class="state-points">{{with index $.ScoringPoints .ScoringId}}{{.}} pts{{end}}</div>
           </button>
           {{end}}
         </div>
