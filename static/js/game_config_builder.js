@@ -23,10 +23,15 @@ class GameConfigBuilder {
     }
     document.getElementById("gameName").value = this.config.name || "Custom Game";
     this.scoring = this.config.scoring || [];
+    if (!Array.isArray(this.scoring)) this.scoring = [];
     (this.config.panels || []).forEach((panel) => (this.panels[panel.id] = panel));
     ["red_near", "red_far", "blue_near", "blue_far", "referee", "head_ref"].forEach((id) => {
       if (!this.panels[id]) this.panels[id] = { id, title: id.replace("_", " "), widgets: [] };
     });
+    // Seed a default scoring item if none exist so the UI has something to bind.
+    if (this.scoring.length === 0) {
+      this.addScoringElement(true);
+    }
   }
 
   bindPalette() {
@@ -74,12 +79,13 @@ class GameConfigBuilder {
     el.dataset.id = widget.id;
     el.dataset.type = widget.type;
     el.style.borderColor = widget.color || "";
-    el.style.gridColumn = `span ${widget.position?.colSpan || 1}`;
+    el.style.gridColumn = `${widget.position?.col || 1} / span ${widget.position?.colSpan || 1}`;
+    el.style.gridRow = widget.position?.row ? `${widget.position.row}` : "auto";
     el.innerHTML = `
       <div class="title">${widget.label || widget.type}</div>
       <div class="meta">
         <span class="badge-type">${widget.type}</span>
-        <span>${widget.points || ""}</span>
+        <span>${this.getScoringLabel(widget.scoringId)}</span>
       </div>
     `;
     el.addEventListener("click", () => this.selectWidget(widget.id));
@@ -113,11 +119,13 @@ class GameConfigBuilder {
       id,
       type,
       label: type.charAt(0).toUpperCase() + type.slice(1),
-      points: type === "foul" ? "-3" : "+1",
       phase: "any",
       color: "#22d3ee",
       position: { row: 1, col: 1, colSpan: 1 },
     };
+    if (type === "section") {
+      widget.color = "#555";
+    }
     panel.widgets.push(widget);
     this.renderPanel();
     this.selectWidget(id);
@@ -149,16 +157,14 @@ class GameConfigBuilder {
       this.renderPanel();
       this.selectWidget(widget.id);
     });
-    document.getElementById("propPoints").addEventListener("input", (e) => {
-      const widget = this.getSelectedWidget();
-      if (!widget) return;
-      widget.points = e.target.value;
-    });
-    document.getElementById("propScoring").addEventListener("change", (e) => {
-      const widget = this.getSelectedWidget();
-      if (!widget) return;
-      widget.scoringId = e.target.value;
-    });
+    const scoringSelect = document.getElementById("propScoring");
+    if (scoringSelect) {
+      scoringSelect.addEventListener("change", (e) => {
+        const widget = this.getSelectedWidget();
+        if (!widget) return;
+        widget.scoringId = e.target.value;
+      });
+    }
     document.getElementById("propPhase").addEventListener("change", (e) => {
       const widget = this.getSelectedWidget();
       if (!widget) return;
@@ -205,7 +211,6 @@ class GameConfigBuilder {
     formState.classList.remove("d-none");
     document.getElementById("propLabel").value = widget.label || "";
     document.getElementById("propId").value = widget.id || "";
-    document.getElementById("propPoints").value = widget.points || "";
     document.getElementById("propPhase").value = widget.phase || "any";
     document.getElementById("propColor").value = widget.color || "#22d3ee";
     document.getElementById("propRow").value = widget.position?.row || 1;
@@ -216,6 +221,7 @@ class GameConfigBuilder {
 
   populateScoringSelect(selectedId) {
     const select = document.getElementById("propScoring");
+    if (!select) return;
     select.innerHTML = '<option value="">None</option>';
     this.scoring.forEach((s) => {
       const opt = document.createElement("option");
@@ -234,11 +240,18 @@ class GameConfigBuilder {
     this.renderPanel();
   }
 
-  addScoringElement() {
+  addScoringElement(silent = false) {
     const id = `score_${Date.now()}`;
-    this.scoring.push({ id, label: "Scoring Item", pointValue: 1, phase: "any" });
+    this.scoring.push({ id, label: "Scoring Item", pointValue: 1 });
     this.renderScoringList();
     this.populateScoringSelect(this.getSelectedWidget()?.scoringId);
+    if (!silent) {
+      // ensure widgets can bind to the new scoring item
+      const select = document.getElementById("propScoring");
+      if (select) select.value = id;
+      const widget = this.getSelectedWidget();
+      if (widget) widget.scoringId = id;
+    }
   }
 
   renderScoringList() {
@@ -251,14 +264,6 @@ class GameConfigBuilder {
         <td><input class="form-control form-control-sm bg-body" value="${s.label}" data-field="label" data-idx="${idx}"></td>
         <td><input class="form-control form-control-sm bg-body" value="${s.id}" data-field="id" data-idx="${idx}"></td>
         <td><input type="number" class="form-control form-control-sm bg-body" value="${s.pointValue}" data-field="pointValue" data-idx="${idx}"></td>
-        <td>
-          <select class="form-select form-select-sm bg-body" data-field="phase" data-idx="${idx}">
-            <option value="any"${s.phase === "any" ? " selected" : ""}>Any</option>
-            <option value="auto"${s.phase === "auto" ? " selected" : ""}>Auto</option>
-            <option value="teleop"${s.phase === "teleop" ? " selected" : ""}>Teleop</option>
-            <option value="endgame"${s.phase === "endgame" ? " selected" : ""}>Endgame</option>
-          </select>
-        </td>
         <td><button class="btn btn-sm btn-outline-danger" data-remove="${idx}">Delete</button></td>
       `;
       tbody.appendChild(tr);
@@ -281,6 +286,13 @@ class GameConfigBuilder {
         this.populateScoringSelect(this.getSelectedWidget()?.scoringId);
       });
     });
+  }
+
+  getScoringLabel(scoringId) {
+    if (!scoringId) return "";
+    const s = this.scoring.find((x) => x.id === scoringId);
+    if (!s) return "";
+    return `${s.label} (${s.pointValue})`;
   }
 
   exportConfig() {

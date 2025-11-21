@@ -687,6 +687,14 @@ dialog::backdrop {
   gap: 14px;
 }
 
+#widgetDeck {
+  padding: 0 1em;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(200px, 1fr));
+  grid-auto-flow: dense;
+  gap: 14px;
+}
+
 .widget-card {
   background: #00000030;
   border: 1px solid var(--interaction-highlight);
@@ -735,4 +743,12 @@ dialog::backdrop {
   border: 1px dashed var(--interaction-highlight);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.05);
+}
+
+.widget-section {
+  font-weight: bold;
+  font-size: 18pt;
+  text-align: left;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--interaction-highlight);
 }

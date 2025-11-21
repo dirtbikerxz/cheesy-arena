@@ -52,7 +52,6 @@ type ScoringElement struct {
 	Id         string `json:"id"`
 	Label      string `json:"label"`
 	PointValue int    `json:"pointValue"`
-	Phase      string `json:"phase"`
 }
 
 type GridPosition struct {

@@ -42,6 +42,7 @@ Game configuration builder for defining panels and scoring inputs without game-s
             <div class="palette-item" draggable="true" data-type="multistate">Multi-State</div>
             <div class="palette-item" draggable="true" data-type="text">Label</div>
             <div class="palette-item" draggable="true" data-type="foul">Foul Button</div>
+            <div class="palette-item" draggable="true" data-type="section">Section Header</div>
           </div>
         </div>
         <div class="col-lg-5 mb-3">
@@ -69,11 +70,6 @@ Game configuration builder for defining panels and scoring inputs without game-s
               <div class="mb-2">
                 <label class="form-label form-label-sm">Identifier</label>
                 <input type="text" id="propId" class="form-control form-control-sm bg-body">
-              </div>
-              <div class="mb-2">
-                <label class="form-label form-label-sm">Points / State Values</label>
-                <input type="text" id="propPoints" class="form-control form-control-sm bg-body"
-                  placeholder="e.g. +2 or stateA:3,stateB:1">
               </div>
               <div class="mb-2">
                 <label class="form-label form-label-sm">Scoring Element</label>
@@ -123,7 +119,6 @@ Game configuration builder for defining panels and scoring inputs without game-s
                     <th>Label</th>
                     <th>Id</th>
                     <th>Points Each</th>
-                    <th>Phase</th>
                     <th></th>
                   </tr>
                 </thead>

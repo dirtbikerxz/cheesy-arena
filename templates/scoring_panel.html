@@ -12,7 +12,6 @@ Dynamic scoring panel rendered from the game configuration builder, keeping the 
 
   <main>
     <div id="top-controls">
-      <div class="banner-title">Controls</div>
       <button id="commit" onclick="commitMatchScore();" disabled>Commit</button>
     </div>
 
@@ -22,8 +21,7 @@ Dynamic scoring panel rendered from the game configuration builder, keeping the 
       {{end}}
       {{range .Panel.Widgets}}
       <div class="widget-card" data-widget-id="{{.Id}}" data-widget-type="{{.Type}}" data-points="{{.PointValue}}"
-        data-states="{{range $k, $v := .StatePoints}}{{$k}}:{{$v}},{{end}}" data-phase="{{.Phase}}"
-        data-scoring="{{.ScoringId}}" style="grid-column: span {{if .Position.ColSpan}}{{.Position.ColSpan}}{{else}}1{{end}};">
+        data-scoring="{{.ScoringId}}" data-phase="{{.Phase}}" style="grid-column: {{.Position.Col}} / span {{if .Position.ColSpan}}{{.Position.ColSpan}}{{else}}1{{end}}; grid-row: {{.Position.Row}};">
         <div class="widget-header">
           <div class="widget-label">{{.Label}}</div>
           <div class="widget-pill">{{.Type}}</div>
@@ -33,26 +31,38 @@ Dynamic scoring panel rendered from the game configuration builder, keeping the 
           <button class="counter-decrement scoring-button widget-dec">-1</button>
           <div class="counter-status">
             <div class="counter-main-value widget-value">0</div>
-            <div class="counter-label">Points: {{.PointValue}}</div>
+            <div class="counter-label">
+              {{if .ScoringId}}
+                {{with index $.ScoringPoints .ScoringId}}+{{.}} pts{{end}}
+              {{else}}
+                +{{.PointValue}} pts
+              {{end}}
+            </div>
           </div>
           <button class="counter-increment scoring-button widget-inc">+1</button>
         </div>
         {{else if eq .Type "toggle"}}
         <button class="team-button widget-toggle">
-          <div class="team-num">{{.PointValue}} pts</div>
+          <div class="team-num">
+            {{if .ScoringId}}
+              {{with index $.ScoringPoints .ScoringId}}{{.}} pts{{end}}
+            {{else}}
+              {{.PointValue}} pts
+            {{end}}
+          </div>
           <div class="team-text">Off</div>
         </button>
         {{else if eq .Type "multistate"}}
         <div class="state-row">
-          {{range $state, $pts := .StatePoints}}
-          <button class="endgame-input-button widget-state" data-state="{{$state}}">
-            {{$state}} ({{$pts}})
+          <button class="endgame-input-button widget-state" data-state="on">
+            Select
           </button>
-          {{end}}
         </div>
         {{else if eq .Type "foul"}}
         <button class="endgame-input-button widget-foul">Add Foul</button>
-        {{else if eq .Type "label"}}
+        {{else if eq .Type "section"}}
+        <div class="widget-section">{{.Label}}</div>
+        {{else if eq .Type "text"}}
         <div class="text-muted small">{{.Label}}</div>
         {{else}}
         <div class="text-muted small">Not configured</div>

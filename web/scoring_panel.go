@@ -45,18 +45,31 @@ func (web *Web) scoringPanelHandler(w http.ResponseWriter, r *http.Request) {
 		PositionName string
 		Panel        *game.PanelConfig
 		Alliance     string
+		ScoringPoints map[string]int
 	}{
 		web.arena.EventSettings,
 		web.arena.Plc.IsEnabled(),
 		position,
 		panelConfig,
 		alliance,
+		buildScoringPointMap(),
 	}
 	err = template.ExecuteTemplate(w, "base_no_navbar", data)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
+}
+
+func buildScoringPointMap() map[string]int {
+	points := map[string]int{}
+	if game.ActiveGameConfig == nil {
+		return points
+	}
+	for _, s := range game.ActiveGameConfig.Scoring {
+		points[s.Id] = s.PointValue
+	}
+	return points
 }
 
 // The websocket endpoint for the scoring interface client to send control commands and receive status updates.
