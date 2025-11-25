@@ -166,6 +166,43 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 					append(web.arena.BlueRealtimeScore.CurrentScore.Fouls, foul)
 			}
 			web.arena.RealtimeScoreNotifier.Notify()
+		} else if command == "toggleFoulType" || command == "updateFoulTeam" || command == "updateFoulRule" || command == "deleteFoul" {
+			args := struct {
+				Alliance string
+				Index    int
+				TeamId   int
+				RuleId   int
+			}{}
+			err = mapstructure.Decode(data, &args)
+			if err != nil {
+				ws.WriteError(err.Error())
+				continue
+			}
+
+			var fouls *[]game.Foul
+			if args.Alliance == "red" {
+				fouls = &web.arena.RedRealtimeScore.CurrentScore.Fouls
+			} else {
+				fouls = &web.arena.BlueRealtimeScore.CurrentScore.Fouls
+			}
+			if args.Index >= 0 && args.Index < len(*fouls) {
+				switch command {
+				case "toggleFoulType":
+					(*fouls)[args.Index].IsMajor = !(*fouls)[args.Index].IsMajor
+					(*fouls)[args.Index].RuleId = 0
+				case "deleteFoul":
+					*fouls = append((*fouls)[:args.Index], (*fouls)[args.Index+1:]...)
+				case "updateFoulTeam":
+					if (*fouls)[args.Index].TeamId == args.TeamId {
+						(*fouls)[args.Index].TeamId = 0
+					} else {
+						(*fouls)[args.Index].TeamId = args.TeamId
+					}
+				case "updateFoulRule":
+					(*fouls)[args.Index].RuleId = args.RuleId
+				}
+				web.arena.RealtimeScoreNotifier.Notify()
+			}
 		} else if command == "widget" {
 			args := struct {
 				WidgetId string

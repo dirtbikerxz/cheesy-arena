@@ -573,18 +573,24 @@ dialog {
   padding: 0;
   border: none;
   border-radius: 16px;
-  overflow: clip;
+  overflow: hidden;
   font-size: 18pt;
   font-weight: bold;
   background-color: var(--alliance-overlay-background);
 }
 
 .dialog-container {
-  max-width: 700px;
-  width: 80vw;
+  max-width: 900px;
+  width: 90vw;
+  max-height: 90vh;
   padding-bottom: 20px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+.dialog-container.wide {
+  width: 95vw;
+  max-width: 1100px;
 }
 
 dialog::backdrop {
@@ -875,4 +881,65 @@ dialog::backdrop {
 }
 .widget-card .widget-state:not(:disabled):hover {
   border-color: #e5e7eb;
+}
+
+.foul-list {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+.foul-list.two-column {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.foul-list-alliance {
+  background: #111827;
+  border: 1px solid var(--interaction-highlight);
+  border-radius: 12px;
+  padding: 8px;
+}
+.foul-list-header {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+.foul-list-header.red {
+  color: var(--red-action);
+}
+.foul-list-header.blue {
+  color: var(--blue-action);
+}
+.foul-list-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.foul-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+}
+.foul-index {
+  text-align: center;
+  color: var(--text-active);
+}
+.foul-type {
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  color: #fff;
+  background: #6b7280;
+}
+.foul-delete {
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  background: #6b7280;
+  color: #fff;
+}
+.foul-empty {
+  text-align: center;
+  padding: 8px;
 }

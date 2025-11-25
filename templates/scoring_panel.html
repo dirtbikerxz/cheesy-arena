@@ -77,14 +77,14 @@ Dynamic scoring panel rendered from the game configuration builder, keeping the 
 </div>
 
 <dialog id="fouls-dialog" onclick="closeFoulsDialogIfOutside(event);">
-  <div class="dialog-container">
-    <div class="dialog-banner">Add Fouls</div>
+  <div class="dialog-container wide">
+    <div class="dialog-banner">Fouls</div>
     <div id="foul-container">
       <button class="foul-button blue" onclick="addFoul('blue', false);">
-        <div class="foul-button-label">Blue</div>
+        <div class="foul-button-label">Blue Foul</div>
       </button>
       <button class="foul-button red" onclick="addFoul('red', false);">
-        <div class="foul-button-label">Red</div>
+        <div class="foul-button-label">Red Foul</div>
       </button>
       <button class="foul-button blue" onclick="addFoul('blue', true);">
         <div class="foul-button-label">Blue Tech</div>
@@ -93,6 +93,7 @@ Dynamic scoring panel rendered from the game configuration builder, keeping the 
         <div class="foul-button-label">Red Tech</div>
       </button>
     </div>
+    <div class="foul-list two-column" id="foulList"></div>
     <button class="dialog-close" autofocus onclick="closeFoulsDialog();" ontouchstart>Close</button>
   </div>
 </dialog>

@@ -6,6 +6,8 @@ let scoringAvailable = false;
 let commitAvailable = false;
 let committed = false;
 let currentPhase = "pregame";
+let redFoulDigest = "";
+let blueFoulDigest = "";
 
 const state = {
   widgets: {},
@@ -138,6 +140,15 @@ const handleRealtimeScore = (data) => {
       btn.setAttribute("aria-pressed", isActive);
     });
   });
+
+  // Update foul list if changed.
+  const newRedDigest = JSON.stringify(data.Red.Score.Fouls || []);
+  const newBlueDigest = JSON.stringify(data.Blue.Score.Fouls || []);
+  if (newRedDigest !== redFoulDigest || newBlueDigest !== blueFoulDigest) {
+    redFoulDigest = newRedDigest;
+    blueFoulDigest = newBlueDigest;
+    renderFoulList(data);
+  }
 };
 
 const commitMatchScore = () => {
@@ -149,6 +160,48 @@ const commitMatchScore = () => {
 
 const addFoul = (foulAlliance, isMajor) => {
   websocket.send("addFoul", { Alliance: foulAlliance, IsMajor: isMajor });
+};
+
+const toggleFoulType = (foulAlliance, index) => {
+  websocket.send("toggleFoulType", { Alliance: foulAlliance, Index: index });
+};
+const updateFoulTeam = (foulAlliance, index, teamId) => {
+  websocket.send("updateFoulTeam", { Alliance: foulAlliance, Index: index, TeamId: teamId });
+};
+const updateFoulRule = (foulAlliance, index, ruleId) => {
+  websocket.send("updateFoulRule", { Alliance: foulAlliance, Index: index, RuleId: ruleId });
+};
+const deleteFoul = (foulAlliance, index) => {
+  websocket.send("deleteFoul", { Alliance: foulAlliance, Index: index });
+};
+
+const renderFoulList = (data) => {
+  const container = document.getElementById("foulList");
+  if (!container) return;
+  const buildAlliance = (alliance, fouls) => {
+    return `
+      <div class="foul-list-alliance">
+        <div class="foul-list-header ${alliance}">${alliance.toUpperCase()} Fouls (${fouls.length})</div>
+        <div class="foul-list-items">
+          ${fouls
+            .map(
+              (foul, idx) => `
+              <div class="foul-row">
+                <div class="foul-index">${idx + 1}</div>
+                <button class="foul-type ${foul.IsMajor ? "major" : "minor"}" onclick="toggleFoulType('${alliance}', ${idx});">
+                  ${foul.IsMajor ? "Major" : "Minor"}
+                </button>
+                <button class="foul-delete" onclick="deleteFoul('${alliance}', ${idx});">Remove</button>
+              </div>
+            `,
+            )
+            .join("")}
+          ${fouls.length === 0 ? '<div class="foul-empty text-muted">No fouls yet.</div>' : ""}
+        </div>
+      </div>
+    `;
+  };
+  container.innerHTML = buildAlliance("blue", data.Blue.Score.Fouls || []) + buildAlliance("red", data.Red.Score.Fouls || []);
 };
 
 const resetLocalState = () => {};
@@ -179,6 +232,10 @@ window.addEventListener("load", () => {
 
 window.addFoul = addFoul;
 window.commitMatchScore = commitMatchScore;
+window.toggleFoulType = toggleFoulType;
+window.updateFoulTeam = updateFoulTeam;
+window.updateFoulRule = updateFoulRule;
+window.deleteFoul = deleteFoul;
 window.openFoulDialog = () => {
   document.getElementById("fouls-dialog").showModal();
 };
