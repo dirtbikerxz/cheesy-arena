@@ -266,21 +266,6 @@ main {
   font-weight: bold;
 }
 
-#commit {
-  flex: 1 1 0%;
-  height: 100%;
-  border-radius: var(--button-border-radius);
-  color: var(--text-active);
-  background-color: var(--green-action);
-  font-size: 18pt;
-  font-weight: bold;
-  padding: 0.2em;
-}
-
-#commit:disabled {
-  visibility: hidden;
-}
-
 .team-button {
   border-radius: var(--button-border-radius);
   color: var(--text-active);
@@ -577,6 +562,11 @@ main {
   font-size: 18pt;
   font-weight: bold;
   padding: 0.2em 1.4em;
+}
+#commit:disabled {
+  background-color: var(--neutral-inactive);
+  color: var(--text-inactive);
+  cursor: not-allowed;
 }
 
 dialog {
