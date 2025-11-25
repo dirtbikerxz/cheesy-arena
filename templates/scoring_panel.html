@@ -11,10 +11,6 @@ Dynamic scoring panel rendered from the game configuration builder, keeping the 
   </header>
 
   <main>
-    <div id="top-controls">
-      <button id="commit" onclick="commitMatchScore();" disabled>Commit</button>
-    </div>
-
     <div id="widgetDeck">
       {{if not .Panel.Widgets}}
       <div class="empty-panel text-muted">No widgets configured for this panel.</div>
@@ -73,8 +69,9 @@ Dynamic scoring panel rendered from the game configuration builder, keeping the 
       {{end}}
     </div>
 
-    <div id="bottom-controls">
-      <button id="fouls-button" class="scoring-button" onclick="openFoulDialog();" disabled>Fouls</button>
+    <div id="bottom-controls" class="d-flex justify-content-between align-items-center">
+      <button id="fouls-button" class="scoring-button btn-lg" onclick="openFoulDialog();" disabled>Fouls</button>
+      <button id="commit" class="scoring-button btn-lg btn-success" onclick="commitMatchScore();" disabled>Commit</button>
     </div>
   </main>
 </div>

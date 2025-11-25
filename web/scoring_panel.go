@@ -41,10 +41,10 @@ func (web *Web) scoringPanelHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data := struct {
 		*model.EventSettings
-		PlcIsEnabled bool
-		PositionName string
-		Panel        *game.PanelConfig
-		Alliance     string
+		PlcIsEnabled  bool
+		PositionName  string
+		Panel         *game.PanelConfig
+		Alliance      string
 		ScoringPoints map[string]int
 	}{
 		web.arena.EventSettings,

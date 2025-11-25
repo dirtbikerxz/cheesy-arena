@@ -1,237 +1,298 @@
 {
-  "name": "Generic FRC Scrimmage",
+  "name": "Custom Game",
   "panels": [
     {
-      "id": "red_near",
-      "title": "red near",
+      "id": "blue_near",
+      "title": "Blue Near",
       "widgets": [
         {
-          "id": "counter_1763684945385",
-          "type": "counter",
-          "label": "Level 1",
+          "id": "section_1763967839027",
+          "type": "section",
+          "label": "Auto",
           "phase": "any",
-          "color": "#22d3ee",
+          "color": "#555",
           "position": {
             "row": 1,
             "col": 1,
-            "colSpan": 1
+            "colSpan": 4
           },
-          "scoringId": "score_1763678516955"
+          "scoringId": "",
+          "states": []
         },
         {
-          "id": "counter_1763685212530",
+          "id": "counter_1763967861168",
           "type": "counter",
-          "label": "Level 2",
+          "label": "Auto L1",
           "phase": "any",
           "color": "#22d3ee",
           "position": {
-            "row": 1,
+            "row": 2,
+            "col": 1,
+            "colSpan": 1
+          },
+          "scoringId": "score_1763967787288"
+        },
+        {
+          "id": "counter_1763967861512",
+          "type": "counter",
+          "label": "Auto L2",
+          "phase": "any",
+          "color": "#22d3ee",
+          "position": {
+            "row": 2,
             "col": 2,
             "colSpan": 1
           },
-          "scoringId": "score_1763685107712"
+          "scoringId": "score_1763967880645"
         },
         {
-          "id": "counter_1763685231385",
+          "id": "counter_1763967861812",
           "type": "counter",
-          "label": "Level 3",
+          "label": "Auto L3",
           "phase": "any",
           "color": "#22d3ee",
           "position": {
-            "row": 1,
+            "row": 2,
             "col": 3,
             "colSpan": 1
           },
-          "scoringId": "score_1763685107998"
+          "scoringId": "score_1763967880818"
         },
         {
-          "id": "counter_1763685233096",
+          "id": "counter_1763967862113",
           "type": "counter",
-          "label": "Level 4",
+          "label": "Auto L4",
           "phase": "any",
           "color": "#22d3ee",
           "position": {
-            "row": 1,
+            "row": 2,
             "col": 4,
             "colSpan": 1
           },
-          "scoringId": "score_1763685108162"
+          "scoringId": "score_1763967881013"
         },
         {
-          "id": "section_1763685239088",
+          "id": "section_1763967863801",
           "type": "section",
           "label": "Teleop",
           "phase": "any",
           "color": "#555",
           "position": {
-            "row": 2,
+            "row": 3,
             "col": 1,
             "colSpan": 4
-          }
+          },
+          "scoringId": "",
+          "states": []
         },
         {
-          "id": "counter_1763685242111",
+          "id": "counter_1763967866785",
           "type": "counter",
-          "label": "Level 1",
+          "label": "Tele L1",
           "phase": "any",
           "color": "#22d3ee",
           "position": {
-            "row": 3,
+            "row": 4,
             "col": 1,
             "colSpan": 1
           },
-          "scoringId": "score_1763685108312"
+          "scoringId": "score_1763967881906"
         },
         {
-          "id": "counter_1763685242306",
+          "id": "counter_1763967867032",
           "type": "counter",
-          "label": "Level 2",
+          "label": "Tele L2",
           "phase": "any",
           "color": "#22d3ee",
           "position": {
-            "row": 3,
+            "row": 4,
             "col": 2,
             "colSpan": 1
           },
-          "scoringId": "score_1763685108485"
+          "scoringId": "score_1763967882093"
         },
         {
-          "id": "counter_1763685242628",
+          "id": "counter_1763967867311",
           "type": "counter",
-          "label": "Level 3",
+          "label": "Tele L3",
           "phase": "any",
           "color": "#22d3ee",
           "position": {
-            "row": 3,
+            "row": 4,
             "col": 3,
             "colSpan": 1
           },
-          "scoringId": "score_1763685108650"
+          "scoringId": "score_1763967882303"
         },
         {
-          "id": "counter_1763685244998",
+          "id": "counter_1763967867625",
           "type": "counter",
-          "label": "Level 4",
+          "label": "Tele L4",
           "phase": "any",
           "color": "#22d3ee",
           "position": {
-            "row": 3,
+            "row": 4,
             "col": 4,
             "colSpan": 1
           },
-          "scoringId": "score_1763685108815"
+          "scoringId": "score_1763967882551"
         },
         {
-          "id": "toggle_1763685448164",
+          "id": "section_1763967870880",
+          "type": "section",
+          "label": "Endgame",
+          "phase": "any",
+          "color": "#555",
+          "position": {
+            "row": 5,
+            "col": 1,
+            "colSpan": 4
+          },
+          "scoringId": "",
+          "states": []
+        },
+        {
+          "id": "multistate_1763967872771",
+          "type": "multistate",
+          "label": "Endgame",
+          "phase": "any",
+          "color": "#22d3ee",
+          "position": {
+            "row": 6,
+            "col": 1,
+            "colSpan": 1
+          },
+          "states": [
+            {
+              "label": "Park",
+              "value": "state_1",
+              "scoringId": "score_1763967889953"
+            },
+            {
+              "label": "Low",
+              "value": "state_2",
+              "scoringId": "score_1763967890185"
+            },
+            {
+              "value": "state_3",
+              "label": "High",
+              "scoringId": "score_1763967890515"
+            }
+          ],
+          "scoringId": "score_1763967890710"
+        },
+        {
+          "id": "toggle_1763968138873",
           "type": "toggle",
           "label": "Toggle",
           "phase": "any",
           "color": "#22d3ee",
           "position": {
-            "row": 4,
-            "col": 1,
-            "colSpan": 1
-          }
-        },
-        {
-          "id": "multistate_1763685448869",
-          "type": "multistate",
-          "label": "Multistate",
-          "phase": "any",
-          "color": "#22d3ee",
-          "position": {
-            "row": 4,
+            "row": 6,
             "col": 2,
             "colSpan": 1
           },
-          "scoringId": "",
-          "states": [
-            {
-              "value": "state_1",
-              "label": "Parked",
-              "scoringId": "score_1763678516955"
-            },
-            {
-              "value": "state_2",
-              "label": "High",
-              "scoringId": "score_1763685107712"
-            },
-            {
-              "value": "state_3",
-              "label": "Low",
-              "scoringId": "score_1763685107998"
-            }
-          ]
+          "scoringId": "score_1763967890515"
         }
       ]
     },
     {
       "id": "red_far",
-      "title": "red far",
+      "title": "Red Far",
       "widgets": []
     },
     {
-      "id": "blue_near",
-      "title": "blue near",
+      "id": "red_near",
+      "title": "Red Near",
       "widgets": []
     },
     {
       "id": "blue_far",
-      "title": "blue far",
+      "title": "Blue Far",
       "widgets": []
     },
     {
       "id": "referee",
-      "title": "referee",
+      "title": "Referee",
       "widgets": []
     },
     {
       "id": "head_ref",
-      "title": "head ref",
+      "title": "Head Referee",
       "widgets": []
     }
   ],
+  "rules": {
+    "fouls": [
+      {
+        "id": "minor",
+        "label": "Minor Foul",
+        "points": 0
+      },
+      {
+        "id": "major",
+        "isMajor": true,
+        "label": "Major Foul",
+        "points": 0
+      }
+    ]
+  },
+  "version": "1.0.0",
   "scoring": [
     {
-      "id": "score_1763678516955",
-      "label": "Auto Level 1",
-      "pointValue": 2,
-      "phase": "auto"
-    },
-    {
-      "id": "score_1763685107712",
-      "label": "Auto Level 2",
-      "pointValue": 4
-    },
-    {
-      "id": "score_1763685107998",
-      "label": "Auto Level 3",
-      "pointValue": 6
-    },
-    {
-      "id": "score_1763685108162",
-      "label": "Auto Level 4",
-      "pointValue": 8
-    },
-    {
-      "id": "score_1763685108312",
-      "label": "Tele Level 1",
-      "pointValue": 1
-    },
-    {
-      "id": "score_1763685108485",
-      "label": "Tele Level 2",
+      "id": "score_1763967787288",
+      "label": "Auto L1",
       "pointValue": 2
     },
     {
-      "id": "score_1763685108650",
-      "label": "Tele Level 3",
+      "id": "score_1763967880645",
+      "label": "Auto L2",
+      "pointValue": 4
+    },
+    {
+      "id": "score_1763967880818",
+      "label": "Auto L3",
+      "pointValue": 6
+    },
+    {
+      "id": "score_1763967881013",
+      "label": "Auto L4",
+      "pointValue": 8
+    },
+    {
+      "id": "score_1763967881906",
+      "label": "Tele L1",
+      "pointValue": 1
+    },
+    {
+      "id": "score_1763967882093",
+      "label": "Tele L2",
+      "pointValue": 2
+    },
+    {
+      "id": "score_1763967882303",
+      "label": "Tele L3",
       "pointValue": 3
     },
     {
-      "id": "score_1763685108815",
-      "label": "Tele Level 4",
+      "id": "score_1763967882551",
+      "label": "Tele L4",
       "pointValue": 4
+    },
+    {
+      "id": "score_1763967889953",
+      "label": "Parked",
+      "pointValue": 3
+    },
+    {
+      "id": "score_1763967890185",
+      "label": "Low Climb",
+      "pointValue": 5
+    },
+    {
+      "id": "score_1763967890515",
+      "label": "High Climb",
+      "pointValue": 10
     }
   ]
 }
