@@ -254,7 +254,9 @@ main {
   padding: 10px 1em;
   display: flex;
   justify-content: space-between;
+  align-items: stretch;
   gap: 16px;
+  width: 100%;
 }
 
 #l1-total {
@@ -549,9 +551,8 @@ main {
 }
 
 #fouls-button {
-  flex: 1 1 0%;
-  min-width: 200px;
-  max-width: 240px;
+  flex: 1 1 50%;
+  min-width: 0;
   border-radius: var(--button-border-radius);
   color: var(--text-active);
   height: 64px;
@@ -567,9 +568,8 @@ main {
 }
 
 #commit {
-  flex: 1 1 0%;
-  min-width: 200px;
-  max-width: 240px;
+  flex: 1 1 50%;
+  min-width: 0;
   border-radius: var(--button-border-radius);
   color: var(--text-active);
   height: 64px;
