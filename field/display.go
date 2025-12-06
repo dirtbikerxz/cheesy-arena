@@ -7,8 +7,7 @@ package field
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/websocket"
+	"log"
 	"net/url"
 	"reflect"
 	"sort"
@@ -16,6 +15,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/websocket"
 )
 
 const (
@@ -173,9 +175,9 @@ func (arena *Arena) NextDisplayId() string {
 // Creates or gets the given display in the arena registry and triggers a notification.
 func (arena *Arena) RegisterDisplay(displayConfig *DisplayConfiguration, ipAddress string) *Display {
 	displayRegistryMutex.Lock()
-	defer displayRegistryMutex.Unlock()
 
 	display, ok := arena.Displays[displayConfig.Id]
+	var configToPersist *model.DisplayConfiguration
 	if !ok {
 		if savedConfig, err := arena.Database.GetDisplayConfiguration(displayConfig.Id); err == nil && savedConfig != nil {
 			display = newDisplayFromModelConfig(*savedConfig)
@@ -192,6 +194,19 @@ func (arena *Arena) RegisterDisplay(displayConfig *DisplayConfiguration, ipAddre
 			display.DisplayConfiguration = *displayConfig
 			display.Notifier.Notify()
 		} else {
+			// However, for persistent displays, merge in any configuration keys that are missing from the persisted
+			// configuration (e.g. defaults enforced by the HTTP handler) so we don't fight the client URL and cause
+			// endless reloads.
+			configurationChanged := false
+			for key, value := range displayConfig.Configuration {
+				if _, ok := display.DisplayConfiguration.Configuration[key]; !ok {
+					display.DisplayConfiguration.Configuration[key] = value
+					configurationChanged = true
+				}
+			}
+			if configurationChanged {
+				configToPersist = convertToModelDisplayConfig(display.DisplayConfiguration)
+			}
 			display.Notifier.Notify()
 		}
 	} else {
@@ -207,6 +222,15 @@ func (arena *Arena) RegisterDisplay(displayConfig *DisplayConfiguration, ipAddre
 		display.Notifier.Notify()
 	}
 	arena.DisplayConfigurationNotifier.Notify()
+	displayRegistryMutex.Unlock()
+
+	if configToPersist != nil {
+		if err := arena.Database.SaveDisplayConfiguration(configToPersist); err != nil {
+			log.Printf(
+				"Failed to persist merged configuration for display %s: %v", display.DisplayConfiguration.Id, err,
+			)
+		}
+	}
 
 	return display
 }

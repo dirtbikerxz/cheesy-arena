@@ -141,6 +141,44 @@ func TestDisplayRegisterUnregister(t *testing.T) {
 	}
 }
 
+func TestRegisterDisplayMergesDefaultsForPersistentConfig(t *testing.T) {
+	arena := setupTestArena(t)
+
+	// Save a persistent display configuration without any of the defaults normally injected by the HTTP handler.
+	persistedConfig := DisplayConfiguration{
+		Id:            "1",
+		Type:          AudienceDisplay,
+		Configuration: map[string]string{},
+		Persistent:    true,
+	}
+	assert.Nil(t, arena.UpdateDisplay(persistedConfig))
+
+	// Simulate the display reconnecting with the enforced defaults present in the query string.
+	incomingConfig := &DisplayConfiguration{
+		Id:   "1",
+		Type: AudienceDisplay,
+		Configuration: map[string]string{
+			"background":      "#0f0",
+			"overlayLocation": "bottom",
+			"reversed":        "false",
+		},
+	}
+	display := arena.RegisterDisplay(incomingConfig, "1.2.3.4")
+
+	expectedConfiguration := map[string]string{
+		"background":      "#0f0",
+		"overlayLocation": "bottom",
+		"reversed":        "false",
+	}
+	assert.Equal(t, expectedConfiguration, display.DisplayConfiguration.Configuration)
+
+	persisted, err := arena.Database.GetDisplayConfiguration("1")
+	assert.Nil(t, err)
+	if assert.NotNil(t, persisted) {
+		assert.Equal(t, expectedConfiguration, persisted.Configuration)
+	}
+}
+
 func TestDisplayUpdateError(t *testing.T) {
 	arena := setupTestArena(t)
 
